@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 export const metadata: Metadata = {
   metadataBase: new URL(
-    'https://junie-zhu-portfolio.social-coot-9998.chatgpt.site',
+    'https://junie-zhu-portfolio.nayukiki.chatgpt.site',
   ),
   title: 'Yingchi (Junie) Zhu | Software Engineering, Data & Operations',
   description:
