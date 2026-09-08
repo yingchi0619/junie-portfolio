@@ -1,478 +1,884 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
-import { ArrowUpRight, ArrowDown, Plus, Minus, RotateCcw } from 'lucide-react';
-import { Slider } from '@/components/ui/slider';
+/* oxlint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex, jsx-a11y/prefer-tag-over-role -- The named spatial carousel group is intentionally focusable for Left/Right keyboard navigation, with adjacent native controls as an alternative. */
+import {
+  Component,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import {
+  AnimatePresence,
+  LayoutGroup,
+  MotionConfig,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'motion/react';
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  ArrowUpRight,
+  MoveUpRight,
+  X,
+} from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from '@/components/ui/dialog';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import ProjectPreview from './ProjectPreview';
+import Playground from './Playground';
 import { profile } from './content';
-
-const nodes = [
-  { x: 80, y: 205, n: 'Engineering', s: 'Build the system.' },
-  { x: 280, y: 95, n: 'Analytics', s: 'Understand the signal.' },
-  { x: 365, y: 300, n: 'Operations', s: 'Know what happens on the ground.' },
+const Scene = lazy(() => import('./SystemScene'));
+const spring = {
+  type: 'spring' as const,
+  stiffness: 180,
+  damping: 25,
+  mass: 1,
+};
+const modes = [
+  {
+    title: 'Build',
+    heading: 'Turn ideas into working systems.',
+    text: 'Frontend, backend and mini program projects. A foundation in computer engineering, with an interest in how the parts fit together.',
+    project: 1,
+    label: 'MiniWeather interface prototype',
+  },
+  {
+    title: 'Analyze',
+    heading: 'Find the question behind the numbers.',
+    text: 'Explore delivery timeliness, utilization and exception causes. Connect analysis to the operational decisions it can help explain.',
+    project: 0,
+    label: 'Root Cause & Capacity Dashboard',
+  },
+  {
+    title: 'Operate',
+    heading: 'Understand what happens on the ground.',
+    text: 'Hands-on last-mile capacity operations: DSP onboarding, cross-station coordination, route balance, billing and exceptions.',
+    project: 0,
+    label: 'Root Cause & Capacity Dashboard',
+  },
 ];
-function Network() {
-  const [active, setActive] = useState(0);
+class SceneBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children;
+  }
+}
+function Fallback({
+  mode,
+  onMode,
+}: {
+  mode: number;
+  onMode: (n: number) => void;
+}) {
   return (
-    <div className="network">
-      <div className="network-head">
-        <span>CONNECTED THINKING</span>
-        <span className="live-dot">INTERACTIVE</span>
-      </div>
-      <svg
-        viewBox="0 0 470 410"
-        aria-label="An abstract route network connecting engineering, analytics and operations"
-      >
-        <defs>
-          <pattern
-            id="dots"
-            width="22"
-            height="22"
-            patternUnits="userSpaceOnUse"
-          >
-            <circle cx="1" cy="1" r="1" fill="#424642" />
-          </pattern>
-        </defs>
-        <rect width="470" height="410" fill="url(#dots)" />
-        {[
-          [80, 205, 280, 95],
-          [280, 95, 365, 300],
-          [365, 300, 80, 205],
-          [80, 205, 60, 65],
-          [280, 95, 410, 45],
-          [365, 300, 215, 370],
-          [80, 205, 140, 340],
-          [365, 300, 425, 180],
-        ].map((p, i) => (
-          <path
-            key={i}
-            d={`M ${p[0]} ${p[1]} Q 235 205 ${p[2]} ${p[3]}`}
-            className={i === active ? 'route selected' : 'route'}
+    <div className="scene-fallback">
+      <svg viewBox="0 0 500 360" aria-label="System connections">
+        <g fill="none" stroke="#7fabc6">
+          <ellipse
+            cx="250"
+            cy="180"
+            rx="130"
+            ry="60"
+            transform="rotate(-35 250 180)"
           />
-        ))}
-        <path
-          className="moving-route"
-          d={`M ${nodes[active].x} ${nodes[active].y} Q 235 205 ${nodes[(active + 1) % 3].x} ${nodes[(active + 1) % 3].y}`}
-        />
-        {nodes.map((n, i) => (
-          <g key={n.n} className={active === i ? 'node active' : 'node'}>
-            <circle cx={n.x} cy={n.y} r="19" />
-            <circle cx={n.x} cy={n.y} r="5" />
-            <text x={n.x - 22} y={n.y + 40}>
-              0{i + 1} / {n.n.toUpperCase()}
-            </text>
-          </g>
-        ))}
+          <ellipse
+            cx="250"
+            cy="180"
+            rx="130"
+            ry="60"
+            transform="rotate(35 250 180)"
+          />
+          <path d="M250 105L315 150V225L250 260L185 225V150Z M250 180L315 150 M250 180L185 150 M250 180V260" />
+          <path d="M110 95L185 150M390 100L315 150M250 260V315" />
+        </g>
       </svg>
-      <div className="network-bottom">
-        <span className="network-caption">{nodes[active].s}</span>
-        <div
-          className="node-controls"
-          aria-label="Explore connected disciplines"
+      <div>
+        {modes.map((m, i) => (
+          <button
+            key={m.title}
+            aria-pressed={mode === i}
+            onClick={() => onMode(i)}
+          >
+            {m.title}
+          </button>
+        ))}
+      </div>
+      <p>System overview · interactive 2D fallback</p>
+    </div>
+  );
+}
+function Magnetic({
+  children,
+  href,
+  className = '',
+}: {
+  children: ReactNode;
+  href: string;
+  className?: string;
+}) {
+  const reduced = useReducedMotion();
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  return (
+    <motion.a
+      href={href}
+      className={`magnetic ${className}`}
+      animate={offset}
+      transition={spring}
+      onPointerMove={(e) => {
+        if (reduced || e.pointerType !== 'mouse') return;
+        const r = e.currentTarget.getBoundingClientRect();
+        setOffset({
+          x: (e.clientX - r.left - r.width / 2) * 0.09,
+          y: (e.clientY - r.top - r.height / 2) * 0.12,
+        });
+      }}
+      onPointerLeave={() => setOffset({ x: 0, y: 0 })}
+    >
+      {children}
+    </motion.a>
+  );
+}
+function Hero({
+  mode,
+  onMode,
+  onProject,
+}: {
+  mode: number;
+  onMode: (n: number) => void;
+  onProject: (n: number) => void;
+}) {
+  const reduced = !!useReducedMotion();
+  const area = useRef<HTMLElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+  const [visible, setVisible] = useState(true);
+  const [compact, setCompact] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const gesture = useRef({ x: 0, y: 0, hoverX: 0, hoverY: 0, dragging: false });
+  const start = useRef({ x: 0, y: 0 });
+  const { scrollYProgress } = useScroll({
+    target: area,
+    offset: ['start start', 'end start'],
+  });
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.72]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 105]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, -8]);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width:700px)');
+    const resize = () => setCompact(mq.matches);
+    resize();
+    mq.addEventListener('change', resize);
+    const timer = window.setTimeout(() => {
+      try {
+        const canvas = document.createElement('canvas');
+        const gl = canvas.getContext('webgl2');
+        if (!gl) {
+          setFailed(true);
+          return;
+        }
+        gl.getExtension('WEBGL_lose_context')?.loseContext();
+        setReady(true);
+      } catch {
+        setFailed(true);
+      }
+    }, 150);
+    let inView = true;
+    const update = () => setVisible(inView && !document.hidden);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        inView = entries[0].isIntersecting;
+        update();
+      },
+      { threshold: 0.01 },
+    );
+    if (stage.current) observer.observe(stage.current);
+    document.addEventListener('visibilitychange', update);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', update);
+      mq.removeEventListener('change', resize);
+    };
+  }, []);
+  const end = () => {
+    gesture.current.dragging = false;
+    gesture.current.x = 0;
+    gesture.current.y = 0;
+    gesture.current.hoverX = 0;
+    gesture.current.hoverY = 0;
+    setDragging(false);
+  };
+  const fallback = <Fallback mode={mode} onMode={onMode} />;
+  return (
+    <section id="home" className="hero" ref={area}>
+      <div className="hero-topline">
+        <span>YINGCHI “JUNIE” ZHU</span>
+        <span>SOFTWARE / DATA / OPERATIONS</span>
+        <span>NEW JERSEY · NYC</span>
+      </div>
+      <div className="hero-grid">
+        <div className="hero-copy">
+          <div className="edition">
+            <span /> A PORTFOLIO OF CONNECTED THINKING
+          </div>
+          <h1>
+            Systems
+            <br />
+            in <em>motion.</em>
+          </h1>
+          <p className="hero-description">
+            I connect software engineering and data analytics with the
+            real-world complexity of last-mile logistics.
+          </p>
+          <Magnetic href="#work" className="primary-button">
+            Explore selected work <ArrowDown size={17} />
+          </Magnetic>
+          <div className="hero-credentials">
+            <span>NYU TANDON / M.S.</span>
+            <span>GOFO / CAPACITY OPERATIONS</span>
+          </div>
+        </div>
+        <motion.div
+          ref={stage}
+          className={`scene-stage ${dragging ? 'is-dragging' : ''}`}
+          style={reduced ? {} : { scale, y, rotateZ: rotate }}
+          data-scene-state={failed ? 'fallback' : ready ? 'ready' : 'loading'}
+          data-render-state={visible ? 'active' : 'paused'}
+          data-dragging={dragging}
+          onPointerDown={(e) => {
+            if ((e.target as HTMLElement).closest('button') || reduced) return;
+            start.current = { x: e.clientX, y: e.clientY };
+            gesture.current.dragging = true;
+            setDragging(true);
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (reduced) return;
+            const g = gesture.current;
+            if (g.dragging) {
+              g.x = (e.clientX - start.current.x) * 0.006;
+              g.y = (e.clientY - start.current.y) * 0.004;
+            } else if (e.pointerType === 'mouse') {
+              const r = e.currentTarget.getBoundingClientRect();
+              g.hoverX = (e.clientX - r.left - r.width / 2) * 0.00035;
+              g.hoverY = (e.clientY - r.top - r.height / 2) * 0.0003;
+            }
+          }}
+          onPointerUp={end}
+          onPointerCancel={end}
+          onLostPointerCapture={end}
+          onPointerLeave={() => {
+            if (!gesture.current.dragging) {
+              gesture.current.hoverX = 0;
+              gesture.current.hoverY = 0;
+            }
+          }}
         >
-          {nodes.map((n, i) => (
+          <div className="scene-aura" />
+          <div className="scene-cross cross-a">+</div>
+          <div className="scene-cross cross-b">+</div>
+          {failed ? (
+            fallback
+          ) : ready ? (
+            <SceneBoundary fallback={fallback}>
+              <Suspense
+                fallback={
+                  <div className="scene-loading">Assembling the system…</div>
+                }
+              >
+                <Scene
+                  mode={mode}
+                  onMode={onMode}
+                  visible={visible}
+                  reduced={reduced}
+                  compact={compact}
+                  gesture={gesture}
+                  onFailure={() => setFailed(true)}
+                />
+              </Suspense>
+            </SceneBoundary>
+          ) : (
+            <div className="scene-loading">Preparing the system…</div>
+          )}
+          <div className="scene-caption">
+            <span>FIG. 01 / CONNECTED SYSTEM</span>
+            <span>
+              {reduced
+                ? 'SELECT A NODE TO EXPLORE'
+                : dragging
+                  ? 'ROTATING / RELEASE TO RECENTER'
+                  : 'DRAG TO ROTATE · SELECT A NODE'}
+            </span>
+          </div>
+        </motion.div>
+      </div>
+      <div className="mode-strip">
+        <div className="mode-tabs" aria-label="Explore capabilities">
+          {modes.map((m, i) => (
             <button
-              key={n.n}
-              onClick={() => setActive(i)}
-              aria-label={n.n}
-              aria-pressed={active === i}
+              key={m.title}
+              onClick={() => onMode(i)}
+              aria-pressed={mode === i}
             >
-              0{i + 1}
+              <span>0{i + 1}</span>
+              {m.title}
+              {mode === i && <motion.i layoutId="mode-line" />}
             </button>
           ))}
         </div>
+        <div className="mode-copy" aria-live="polite">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={mode}
+              initial={reduced ? false : { y: 8, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <h2>{modes[mode].heading}</h2>
+              <p>{modes[mode].text}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        <button
+          className="mode-project"
+          onClick={() => {
+            onProject(modes[mode].project);
+            document
+              .getElementById('work')
+              ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth' });
+          }}
+        >
+          <span>RELATED EXPLORATION</span>
+          <strong>{modes[mode].label}</strong>
+          <ArrowUpRight size={18} />
+        </button>
       </div>
-    </div>
+    </section>
   );
 }
-function Demo() {
-  const [extra, setExtra] = useState(0);
-  const capacity = 1000 + extra;
-  const load = Math.round((1200 / capacity) * 100);
+function Explorer({
+  index,
+  setIndex,
+}: {
+  index: number;
+  setIndex: (n: number) => void;
+}) {
+  const reduced = !!useReducedMotion();
+  const [opened, setOpened] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const start = useRef(0);
+  const dragDistance = useRef(0);
+  const explore = useRef<HTMLButtonElement>(null);
+  const p = profile.projects[index];
+  const change = (d: number) => setIndex((index + d + 4) % 4);
+  const projectRole = [
+    'Analytics exploration',
+    'Frontend prototyping',
+    'Backend development',
+    'Mini program development',
+  ][index];
   return (
-    <div className="demo">
-      <div className="demo-title">
-        <div>
-          <span className="eyebrow">CAPACITY LAB</span>
-          <h4>Same volume. Different load.</h4>
-        </div>
-        <span className="badge">SIMULATED DATA</span>
+    <section id="work" className="work section">
+      <div className="section-top">
+        <span className="eyebrow">01 / PROJECT EXPLORER</span>
+        <span className="section-note">FOUR WAYS INTO THE WORK</span>
       </div>
-      <p>
-        A simplified one-station scenario. Adjust daily capacity to see the
-        arithmetic—not a delivery forecast.
-      </p>
-      <div className="demo-grid">
-        <div>
-          <div className="range-label">
-            <span id="capacity-label">Additional daily capacity</span>
-            <strong>+{extra} parcels</strong>
+      <div className="work-heading">
+        <h2>
+          Not just the output.
+          <br />
+          <span>The thinking behind it.</span>
+        </h2>
+        <p>
+          Explore software and data projects.
+          <br />
+          Each starts with a different part of the system.
+        </p>
+      </div>
+      <LayoutGroup id="projects">
+        <div
+          className={`project-stage ${dragging ? 'dragging' : ''}`}
+          role="group"
+          aria-roledescription="carousel"
+          tabIndex={0}
+          aria-label="Project Explorer. Drag or use left and right arrow keys to switch projects."
+          onKeyDown={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (e.key === 'ArrowRight') {
+              e.preventDefault();
+              change(1);
+            }
+            if (e.key === 'ArrowLeft') {
+              e.preventDefault();
+              change(-1);
+            }
+          }}
+          onPointerDown={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            start.current = e.clientX;
+            dragDistance.current = 0;
+            setDragging(true);
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (dragging) dragDistance.current = e.clientX - start.current;
+          }}
+          onPointerUp={() => {
+            if (dragging && Math.abs(dragDistance.current) > 45)
+              change(dragDistance.current < 0 ? 1 : -1);
+            setDragging(false);
+          }}
+          onPointerCancel={() => setDragging(false)}
+          onLostPointerCapture={() => setDragging(false)}
+        >
+          {profile.projects.map((project, i) => {
+            let offset = (i - index + 4) % 4;
+            if (offset === 3) offset = -1;
+            return (
+              <motion.div
+                key={project.id}
+                className={`project-slide ${offset === 0 ? 'current' : ''}`}
+                data-active={offset === 0}
+                aria-hidden={offset !== 0}
+                animate={{
+                  x: `${offset * 77}%`,
+                  rotateY: offset === 0 ? 0 : offset < 0 ? 25 : -25,
+                  scale: offset === 0 ? 1 : 0.82,
+                  z: offset === 0 ? 0 : -120,
+                  opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.42,
+                }}
+                transition={reduced ? { duration: 0 } : spring}
+                style={{
+                  zIndex: offset === 0 ? 3 : 1,
+                  pointerEvents: Math.abs(offset) > 1 ? 'none' : 'auto',
+                }}
+              >
+                <motion.div
+                  layoutId={`preview-${project.id}`}
+                  transition={reduced ? { duration: 0 } : spring}
+                >
+                  <ProjectPreview id={project.id} />
+                </motion.div>
+              </motion.div>
+            );
+          })}
+        </div>
+        <div className="explorer-controls">
+          <span className="drag-instruction">← DRAG TO EXPLORE →</span>
+          <div className="project-dots" aria-label="Select a project">
+            {profile.projects.map((project, i) => (
+              <button
+                key={project.id}
+                onClick={() => setIndex(i)}
+                aria-label={`Show ${project.title}`}
+                aria-pressed={index === i}
+              >
+                <span />
+              </button>
+            ))}
           </div>
-          <Slider
-            aria-labelledby="capacity-label"
-            min={0}
-            max={1000}
-            step={50}
-            value={[extra]}
-            onValueChange={(v) => setExtra(Array.isArray(v) ? v[0] : v)}
-          />
-          <div className="range-ends">
-            <span>0</span>
-            <span>+1,000 parcels</span>
+          <div className="arrow-controls">
+            <button aria-label="Previous project" onClick={() => change(-1)}>
+              <ArrowLeft size={18} />
+            </button>
+            <span>0{index + 1} / 04</span>
+            <button aria-label="Next project" onClick={() => change(1)}>
+              <ArrowRight size={18} />
+            </button>
           </div>
-          <button className="reset" onClick={() => setExtra(0)}>
-            <RotateCcw size={14} /> Reset scenario
+        </div>
+        <div className="project-info" aria-live="polite">
+          <div>
+            <span className="eyebrow">
+              {p.type} / {projectRole}
+            </span>
+            <motion.h3
+              key={p.id}
+              initial={reduced ? false : { y: 8, opacity: 0.4 }}
+              animate={{ y: 0, opacity: 1 }}
+            >
+              {p.title}
+            </motion.h3>
+            <p>{p.intro}</p>
+            <div className="tags">
+              {p.stack.split(' · ').map((s) => (
+                <span key={s}>{s}</span>
+              ))}
+            </div>
+          </div>
+          <button
+            ref={explore}
+            className="explore-button"
+            onClick={() => setOpened(true)}
+          >
+            Explore case study <MoveUpRight size={24} />
           </button>
         </div>
-        <div className="load-result" aria-live="polite">
-          <strong>
-            {load}
-            <small>%</small>
-          </strong>
-          <span>
-            {load > 100
-              ? 'Over capacity'
-              : load === 100
-                ? 'At capacity'
-                : 'Within capacity'}
-          </span>
-        </div>
+        <Dialog open={opened} onOpenChange={setOpened}>
+          <DialogContent
+            className="case-dialog"
+            showCloseButton={false}
+            finalFocus={explore}
+          >
+            <DialogClose className="case-close" aria-label="Close case study">
+              <X size={22} />
+            </DialogClose>
+            <div className="case-scroll">
+              <div className="case-head">
+                <span className="eyebrow">
+                  {p.type} · {p.stack}
+                </span>
+                <DialogTitle className="case-title">{p.title}</DialogTitle>
+                <DialogDescription className="case-description">
+                  {p.intro}
+                </DialogDescription>
+              </div>
+              <motion.div
+                layoutId={`preview-${p.id}`}
+                transition={reduced ? { duration: 0 } : spring}
+              >
+                <ProjectPreview id={p.id} />
+              </motion.div>
+              <div className="case-grid">
+                {[
+                  ['01', 'Problem', p.problem],
+                  ['02', 'My Contribution', p.contribution],
+                  ['03', 'Approach', p.approach],
+                  ['04', 'Outcome', p.outcome],
+                ].map(([n, title, text]) => (
+                  <div key={title}>
+                    <span>{n}</span>
+                    <div>
+                      <h3>{title}</h3>
+                      <p>{text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {p.id === 'capacity' && (
+                <button
+                  className="primary-button case-play"
+                  onClick={() => {
+                    setOpened(false);
+                    window.setTimeout(
+                      () =>
+                        document.getElementById('playground')?.scrollIntoView({
+                          behavior: reduced ? 'instant' : 'smooth',
+                        }),
+                      80,
+                    );
+                  }}
+                >
+                  Try the Operations Playground <ArrowDown size={16} />
+                </button>
+              )}
+              {p.url && (
+                <a className="primary-button" href={p.url}>
+                  View GitHub repository <ArrowUpRight size={18} />
+                </a>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </LayoutGroup>
+    </section>
+  );
+}
+const journeys = [
+  {
+    id: 'gofo',
+    label: 'PROFESSIONAL EXPERIENCE',
+    name: 'GOFO INC',
+    degree: 'Capacity Operations Specialist',
+    body: 'Coordinating last-mile delivery capacity where plans meet daily reality.',
+    details: [
+      'Last-mile capacity, cross-station coordination, route and parcel-volume balance.',
+      'DSP onboarding and management, billing, exception handling and process improvement.',
+    ],
+    skills: [
+      'Capacity planning',
+      'DSP coordination',
+      'Exception analysis',
+      'Process improvement',
+    ],
+    project: 0,
+    projectLabel: 'Related personal exploration: Root Cause & Capacity',
+  },
+  {
+    id: 'nyu',
+    label: 'GRADUATE EDUCATION',
+    name: 'New York University',
+    degree: 'M.S. in Computer Engineering · Tandon',
+    body: 'A graduate foundation in computer engineering.',
+    details: [
+      'Degree information is shown without unverified dates, coursework or academic results.',
+    ],
+    skills: [
+      'React',
+      'Next.js',
+      'TypeScript',
+      'Node.js',
+      'AWS',
+      'Docker',
+      'CI/CD',
+    ],
+    project: 2,
+    projectLabel: 'Explore the Node.js / Express project',
+  },
+  {
+    id: 'arizona',
+    label: 'UNDERGRADUATE EDUCATION',
+    name: 'University of Arizona',
+    degree: 'B.S. in Information Science and Technology',
+    body: 'An undergraduate foundation in information science and technology.',
+    details: [
+      'Explore the technical toolkit and independent project work alongside this education.',
+    ],
+    skills: ['Python', 'SQL', 'PostgreSQL'],
+    project: 1,
+    projectLabel: 'Explore the MiniWeather prototype',
+  },
+];
+function Journey({ onProject }: { onProject: (n: number) => void }) {
+  const [selected, setSelected] = useState<string[]>(['gofo']);
+  const active = journeys.find((j) => j.id === selected[0]);
+  return (
+    <section id="experience" className="journey section">
+      <div className="section-top">
+        <span className="eyebrow">03 / EXPERIENCE & EDUCATION</span>
+        <span className="section-note">CONTEXT SHAPES THE QUESTIONS</span>
       </div>
-      <div className="load-track">
-        <div
-          style={{
-            width: `${Math.min((load / 150) * 100, 100)}%`,
-            background: load > 100 ? '#c66531' : '#2457ff',
-          }}
-        />
-        <span style={{ left: '66.666%' }} />
+      <h2>
+        Engineering meets
+        <br />
+        <span>operational reality.</span>
+      </h2>
+      <div className="journey-grid">
+        <Accordion
+          value={selected}
+          onValueChange={(v) => setSelected(v as string[])}
+          className="timeline"
+        >
+          {journeys.map((j) => (
+            <AccordionItem value={j.id} key={j.id} className="timeline-item">
+              <AccordionTrigger className="timeline-trigger">
+                <span className="timeline-node" />
+                <span>
+                  <span className="eyebrow">{j.label}</span>
+                  <strong>{j.name}</strong>
+                  <small>{j.degree}</small>
+                </span>
+              </AccordionTrigger>
+              <AccordionContent className="timeline-content">
+                <p>{j.body}</p>
+                {j.details.map((d) => (
+                  <p key={d}>{d}</p>
+                ))}
+                {j.id === 'gofo' && profile.roleDates && (
+                  <p>{profile.roleDates}</p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+          ))}
+        </Accordion>
+        <aside className="connected-context">
+          <span className="eyebrow">CONNECTED CONTEXT</span>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={active?.id || 'none'}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.18 }}
+            >
+              <h3>
+                {active
+                  ? active.id === 'gofo'
+                    ? 'What operations teaches me'
+                    : 'A foundation to build on'
+                  : 'Select an experience'}
+              </h3>
+              <p>
+                {active?.id === 'gofo'
+                  ? 'Technical solutions start with understanding the constraints, handoffs and exceptions in a real operation.'
+                  : 'Skills and independent projects from my portfolio; no coursework or project affiliation is implied.'}
+              </p>
+              <div className="tags">
+                {active?.skills.map((s) => (
+                  <span className="highlight" key={s}>
+                    {s}
+                  </span>
+                ))}
+              </div>
+              {active && (
+                <button
+                  className="journey-project"
+                  onClick={() => {
+                    onProject(active.project);
+                    document.getElementById('work')?.scrollIntoView({
+                      behavior: window.matchMedia(
+                        '(prefers-reduced-motion: reduce)',
+                      ).matches
+                        ? 'instant'
+                        : 'smooth',
+                    });
+                  }}
+                >
+                  {active.projectLabel}
+                  <ArrowUpRight size={20} />
+                </button>
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </aside>
       </div>
-      <div className="demo-foot">
-        <span>Volume: 1,200 parcels/day</span>
-        <span>Capacity: {capacity.toLocaleString()} parcels/day</span>
+      <div className="toolkit">
+        <span className="eyebrow">TECHNICAL TOOLKIT</span>
+        {Object.entries(profile.skills).map(([label, skills]) => (
+          <div key={label}>
+            <h4>{label}</h4>
+            <div>
+              {skills.map((s) => (
+                <span
+                  key={s}
+                  className={active?.skills.includes(s) ? 'skill-active' : ''}
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
-      <p className="fine">
-        Load = volume ÷ capacity. Fixed demand; equal parcel effort; no routing,
-        staffing, cost or service-time constraints. Synthetic values are
-        unrelated to GOFO operations.
-      </p>
-    </div>
+    </section>
   );
 }
 export default function Home() {
-  const [open, setOpen] = useState<string | null>(null);
-  const root = useRef<HTMLDivElement>(null);
+  const [mode, setMode] = useState(0);
+  const [project, setProject] = useState(0);
+  const [section, setSection] = useState('home');
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    if (mq.matches) return;
     const observer = new IntersectionObserver(
       (entries) =>
         entries.forEach((e) => {
-          if (e.isIntersecting) {
-            e.target.classList.add('revealed');
-            observer.unobserve(e.target);
-          }
+          if (e.isIntersecting) setSection(e.target.id);
         }),
-      { threshold: 0.08 },
+      { rootMargin: '-20% 0px -55% 0px' },
     );
-    root.current
-      ?.querySelectorAll('.reveal')
-      .forEach((el) => observer.observe(el));
+    document
+      .querySelectorAll('main>section')
+      .forEach((s) => observer.observe(s));
     return () => observer.disconnect();
   }, []);
   return (
-    <div ref={root} id="top">
+    <MotionConfig reducedMotion="user" transition={spring}>
       <a className="skip" href="#main">
         Skip to content
       </a>
       <header className="header">
-        <a href="#top" className="brand" aria-label="Junie Zhu home">
-          jz<span>✳</span>
+        <a className="brand" href="#home">
+          junie<span> / zhu</span>
+          <i />
         </a>
         <nav aria-label="Main navigation">
-          <a href="#work">Work</a>
-          <a href="#experience">Experience</a>
-          <a href="#about">About</a>
-          <a href="#contact" className="contact-nav">
-            Let’s connect <ArrowUpRight size={15} />
-          </a>
+          {[
+            ['work', 'Work'],
+            ['playground', 'Playground'],
+            ['experience', 'Experience'],
+            ['contact', 'Contact'],
+          ].map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              aria-current={section === id ? 'location' : undefined}
+            >
+              {label}
+              <span />
+            </a>
+          ))}
         </nav>
+        <span className="nav-locale">
+          NJ / NYC <ArrowUpRight size={13} />
+        </span>
       </header>
       <main id="main">
-        <section className="hero">
-          <div className="hero-copy">
-            <p className="eyebrow">
-              <span className="blue-dot" /> YINGCHI “JUNIE” ZHU{' '}
-              <span className="location">NJ / NYC</span>
-            </p>
-            <h1>
-              Built with code.
-              <br />
-              Informed by data.
-              <br />
-              <span>
-                Grounded in
-                <br className="desktop-br" /> the real world.
-              </span>
-            </h1>
-            <p className="hero-description">
-              I connect software engineering and data analytics with hands-on
-              experience in last-mile logistics.
-            </p>
-            <a className="primary-button" href="#work">
-              Explore my work <ArrowDown size={18} />
-            </a>
-          </div>
-          <Network />
-          <div className="hero-footer">
-            <span>SOFTWARE ENGINEERING × DATA ANALYTICS × OPERATIONS</span>
-            <span>SCROLL TO EXPLORE ↓</span>
-          </div>
-        </section>
-        <section id="work" className="section work">
-          <div className="section-heading reveal">
-            <p className="eyebrow">01 / SELECTED WORK</p>
-            <h2>
-              From operational questions
-              <br />
-              to technical exploration.
-            </h2>
-            <p>
-              Personal projects across analytics, frontend and backend
-              development.
-            </p>
-          </div>
-          <div className="projects">
-            {profile.projects.map((p, i) => (
-              <article
-                className={`project reveal ${open === p.id ? 'is-open' : ''}`}
-                key={p.id}
-              >
-                <button
-                  className="project-toggle"
-                  aria-expanded={open === p.id}
-                  aria-controls={`case-${p.id}`}
-                  onClick={() => setOpen(open === p.id ? null : p.id)}
-                >
-                  <span className="project-number">0{i + 1}</span>
-                  <div className="project-main">
-                    <span className="eyebrow">{p.type}</span>
-                    <h3>{p.title}</h3>
-                    <p>{p.intro}</p>
-                    <span className="stack">{p.stack}</span>
-                  </div>
-                  <div
-                    className={`project-preview preview-${i}`}
-                    aria-hidden="true"
-                  >
-                    {i === 0 ? (
-                      <>
-                        <span>CAPACITY / EXPLORER</span>
-                        <div className="mini-bars">
-                          {[50, 82, 65, 95, 72, 58, 88].map((v, j) => (
-                            <i key={j} style={{ height: `${v}%` }} />
-                          ))}
-                        </div>
-                        <span>VOLUME ↗ UTILIZATION</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>
-                          {
-                            [
-                              '',
-                              'STATION / INTERFACE',
-                              'SERVER / LOGIC',
-                              'MINI / PROGRAM',
-                            ][i]
-                          }
-                        </span>
-                        <strong>{['', 'NJ↗', '{ / }', 'ootd.'][i]}</strong>
-                        <span>
-                          {['', 'FRONTEND', 'NODE + EXPRESS', 'WECHAT'][i]}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <span className="expand-icon">
-                    {open === p.id ? <Minus /> : <Plus />}
-                    <span className="sr-only">
-                      {open === p.id ? 'Close' : 'Read'} case study
-                    </span>
-                  </span>
-                </button>
-                <div
-                  id={`case-${p.id}`}
-                  hidden={open !== p.id}
-                  className="case"
-                >
-                  <div className="case-grid">
-                    {[
-                      ['Problem', p.problem],
-                      ['My Contribution', p.contribution],
-                      ['Approach', p.approach],
-                      ['Outcome', p.outcome],
-                    ].map(([label, value]) => (
-                      <div key={label}>
-                        <h4>{label}</h4>
-                        <p>{value}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {p.id === 'capacity' && <Demo />}
-                  {p.url && (
-                    <a href={p.url}>
-                      View project <ArrowUpRight size={16} />
-                    </a>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-        <section id="experience" className="section experience">
-          <div className="section-heading reveal">
-            <p className="eyebrow">02 / REAL-WORLD EXPERIENCE</p>
-            <h2>
-              Close to the operation.
-              <br />
-              <span>Closer to the problem.</span>
-            </h2>
-          </div>
-          <div className="experience-body reveal">
-            <div>
-              <p className="company">GOFO INC</p>
-              <h3>
-                Capacity Operations
-                <br />
-                Specialist
-              </h3>
-              <span className="badge">PROFESSIONAL EXPERIENCE</span>
-              {profile.roleDates && <p>{profile.roleDates}</p>}
-            </div>
-            <div>
-              <p className="experience-intro">
-                My work sits where delivery plans meet daily reality:
-                coordinating capacity, partners and station needs across the
-                last mile.
-              </p>
-              <div className="responsibility">
-                <span>01</span>
-                <div>
-                  <h4>Capacity & coordination</h4>
-                  <p>
-                    Last-mile delivery capacity, cross-station coordination, and
-                    balancing routes with parcel volume.
-                  </p>
-                </div>
-              </div>
-              <div className="responsibility">
-                <span>02</span>
-                <div>
-                  <h4>Partner operations</h4>
-                  <p>
-                    Delivery service provider (DSP) onboarding and management,
-                    billing and exception handling.
-                  </p>
-                </div>
-              </div>
-              <div className="responsibility">
-                <span>03</span>
-                <div>
-                  <h4>Process improvement</h4>
-                  <p>
-                    Working through operational issues and improving the
-                    processes that support daily delivery execution.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="experience-note">
-            This operational context informs the questions I bring to software
-            and data projects.
-          </div>
-        </section>
-        <section id="about" className="section about">
-          <div className="section-heading reveal">
-            <p className="eyebrow">03 / EDUCATION & TOOLKIT</p>
-            <h2>
-              A technical foundation.
-              <br />
-              An operational perspective.
-            </h2>
-          </div>
-          <div className="about-grid reveal">
-            <div>
-              <p className="eyebrow">EDUCATION</p>
-              <div className="education">
-                <span>NYU</span>
-                <div>
-                  <h3>New York University</h3>
-                  <p>Tandon School of Engineering</p>
-                  <strong>M.S. in Computer Engineering</strong>
-                </div>
-              </div>
-              <div className="education">
-                <span>UA</span>
-                <div>
-                  <h3>University of Arizona</h3>
-                  <strong>
-                    B.S. in Information Science
-                    <br />
-                    and Technology
-                  </strong>
-                </div>
-              </div>
-            </div>
-            <div className="skills">
-              <p className="eyebrow">TECHNICAL SKILLS</p>
-              {Object.entries(profile.skills).map(([label, skills]) => (
-                <div key={label}>
-                  <h4>{label}</h4>
-                  <p>{skills.join(' / ')}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section id="contact" className="contact section reveal">
-          <p className="eyebrow">04 / WHAT’S NEXT</p>
+        <Hero
+          mode={mode}
+          onMode={(n) => {
+            setMode(n);
+            setProject(modes[n].project);
+          }}
+          onProject={setProject}
+        />
+        <Explorer index={project} setIndex={setProject} />
+        <Playground />
+        <Journey onProject={setProject} />
+        <section id="contact" className="contact section">
+          <span className="eyebrow">04 / THE NEXT CONNECTION</span>
           <h2>
-            Let’s build something
+            Good systems start
             <br />
-            <span>that works in the real world.</span>
+            with a <em>conversation.</em>
           </h2>
           <div className="contact-bottom">
             <p>
-              Yingchi Zhu · Call me Junie.
+              Yingchi Zhu. Call me Junie.
               <br />
-              Based in New Jersey / NYC.
+              Software engineering / Data analytics
+              <br />
+              New Jersey · NYC
             </p>
             <div>
               {profile.email ? (
-                <a className="primary-button" href={`mailto:${profile.email}`}>
-                  Say hello <ArrowUpRight size={18} />
-                </a>
+                <Magnetic
+                  className="primary-button"
+                  href={`mailto:${profile.email}`}
+                >
+                  Let’s connect <ArrowUpRight size={20} />
+                </Magnetic>
               ) : (
-                <p className="contact-note">
-                  For opportunities in software engineering
+                <p>
+                  Have a role where software meets real-world complexity?
                   <br />
-                  and data analytics, please reach out through
-                  <br />
-                  the channel where you found my portfolio.
+                  Reach out through the channel where you found this portfolio.
                 </p>
               )}
-              {profile.linkedin && <a href={profile.linkedin}>LinkedIn ↗</a>}
-              {profile.github && <a href={profile.github}>GitHub ↗</a>}
-              {profile.resume && <a href={profile.resume}>Résumé ↗</a>}
+              <div className="contact-links">
+                {profile.linkedin && <a href={profile.linkedin}>LinkedIn ↗</a>}
+                {profile.github && <a href={profile.github}>GitHub ↗</a>}
+                {profile.resume && <a href={profile.resume}>Résumé ↗</a>}
+              </div>
             </div>
           </div>
+          <footer>
+            <span>JUNIE ZHU / SYSTEMS IN MOTION</span>
+            <a href="#home">Back to the system ↑</a>
+          </footer>
         </section>
       </main>
-      <footer>
-        <span>YINGCHI ZHU / JUNIE</span>
-        <span>Engineering. Analytics. Operations.</span>
-        <a href="#top">Back to top ↑</a>
-      </footer>
-    </div>
+    </MotionConfig>
   );
 }

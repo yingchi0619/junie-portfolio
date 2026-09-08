@@ -32,20 +32,21 @@ export const profile = {
       url: '',
     },
     {
-      id: 'driver',
-      title: 'NJ Driver',
-      type: 'Frontend project',
-      stack: 'Web frontend',
+      id: 'miniweather',
+      title: 'MiniWeather',
+      type: 'Frontend prototype',
+      stack: 'JavaScript · HTML / CSS · Tailwind CSS',
       intro:
-        'A station-facing frontend project, grounded in a logistics context.',
+        'A weather-and-outfit interface prototype connecting daily conditions with everyday decisions.',
       problem:
-        'A station context provides the setting for this frontend project.',
-      contribution: 'Frontend work for NJ Driver.',
+        'Weather details and outfit choices often live in separate experiences. This prototype brings them into one mobile-oriented interface.',
+      contribution:
+        'Frontend prototype work across onboarding, weather, outfit and profile screens. The repository includes browser prototypes alongside a WeChat mini program starter.',
       approach:
-        'The project focuses on the web interface. Specific screens, workflows and implementation details will be added when supporting materials are available.',
+        'Use HTML, Tailwind CSS and JavaScript for tab navigation, weather layouts, outfit-popup interactions and profile editing. Store city and preferences locally with localStorage. Weather views include current conditions, hourly and seven-day layouts, using static sample values.',
       outcome:
-        'Listed as frontend project experience. No adoption, performance or operational results are claimed.',
-      url: '',
+        'A browsable interface prototype with local preferences and linked screens. The reviewed code does not implement live weather retrieval or a production recommendation engine; the WeChat directory remains starter code.',
+      url: 'https://github.com/yingchi0619/miniweather',
     },
     {
       id: 'commerce',
