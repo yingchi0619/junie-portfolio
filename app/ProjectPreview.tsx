@@ -107,37 +107,38 @@ export default function ProjectPreview({ id }: { id: string }) {
             <span className="weather-footer">WEATHER / OUTFIT / PROFILE</span>
           </div>
           <div className="weather-details">
-            <div className="weather-hours">
-              <span>HOURLY OUTLOOK</span>
+            <div className="weather-context">
+              <span>CONTEXT ASSEMBLY</span>
               <div>
-                {['10:00', '12:00', '14:00', '16:00'].map((t, i) => (
-                  <div key={t}>
-                    <small>{t}</small>
-                    <i />
-                    <b>{[22, 23, 24, 22][i]}°</b>
-                  </div>
-                ))}
+                <small>CITY WEATHER</small>
+                <b>23° / CLEAR</b>
+              </div>
+              <div>
+                <small>USER PREFERENCE</small>
+                <b>COMFORT / COLOR</b>
+              </div>
+              <div>
+                <small>TODAY’S STYLE</small>
+                <b>USER SELECTED</b>
               </div>
             </div>
-            <div className="weather-week">
-              <span>SEVEN-DAY VIEW</span>
-              {['MON', 'TUE', 'WED'].map((d, i) => (
-                <div key={d}>
-                  <small>{d}</small>
-                  <span>
-                    <i style={{ width: `${[75, 95, 65][i]}%` }} />
-                  </span>
-                  <b>{[23, 25, 22][i]}°</b>
-                </div>
-              ))}
+            <div
+              className="weather-ai-flow"
+              aria-label="AI recommendation flow"
+            >
+              <span>↓</span>
+              <strong>DEEPSEEK</strong>
+              <span>↓</span>
             </div>
-            <div className="weather-outfit">
-              <span>DAILY STYLE</span>
-              <p>
-                Weather & outfit
-                <br />
-                in one experience.
-              </p>
+            <div className="weather-output">
+              <span>GENERATED OUTPUT</span>
+              <div>
+                <i>IMAGE</i>
+                <p>
+                  Outfit preview
+                  <br />+ recommendation
+                </p>
+              </div>
             </div>
           </div>
         </div>

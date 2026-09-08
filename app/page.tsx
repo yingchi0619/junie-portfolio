@@ -53,7 +53,7 @@ const modes = [
   {
     title: 'Build',
     heading: 'Turn ideas into working systems.',
-    text: 'Frontend, backend and mini program projects. A foundation in computer engineering, with an interest in how the parts fit together.',
+    text: 'Frontend, backend and AI-assisted product projects. A foundation in computer engineering, with an interest in how the parts fit together.',
     project: 1,
     label: 'MiniWeather interface prototype',
   },

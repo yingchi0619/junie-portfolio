@@ -34,18 +34,18 @@ export const profile = {
     {
       id: 'miniweather',
       title: 'MiniWeather',
-      type: 'Frontend prototype',
-      stack: 'JavaScript · HTML / CSS · Tailwind CSS',
+      type: 'AI-assisted product prototype',
+      stack: 'JavaScript · Weather API · DeepSeek API · Image generation',
       intro:
-        'A weather-and-outfit interface prototype connecting daily conditions with everyday decisions.',
+        'A weather-and-outfit experience that turns local conditions and personal preferences into a visual daily recommendation.',
       problem:
-        'Weather details and outfit choices often live in separate experiences. This prototype brings them into one mobile-oriented interface.',
+        'Weather data alone does not answer the practical question: what should I wear today? MiniWeather combines local conditions with the user’s style and comfort preferences.',
       contribution:
-        'Frontend prototype work across onboarding, weather, outfit and profile screens. The repository includes browser prototypes alongside a WeChat mini program starter.',
+        'Designed the end-to-end interaction across onboarding, weather, outfit and profile screens, including the inputs and response states for an AI-generated outfit recommendation.',
       approach:
-        'Use HTML, Tailwind CSS and JavaScript for tab navigation, weather layouts, outfit-popup interactions and profile editing. Store city and preferences locally with localStorage. Weather views include current conditions, hourly and seven-day layouts, using static sample values.',
+        'Call a weather API with the user’s city, then combine the returned daily temperature with the saved outfit-preference description and the style selected on the OOTD page. Send that context to APIs powered by the open-source DeepSeek model to generate recommendation copy and an outfit preview image.',
       outcome:
-        'A browsable interface prototype with local preferences and linked screens. The reviewed code does not implement live weather retrieval or a production recommendation engine; the WeChat directory remains starter code.',
+        'A browsable mobile-oriented prototype that demonstrates the complete product flow. The local version currently shows sample weather and UI states because its backend APIs are not connected; it should not be read as a live weather service or deployed recommendation engine.',
       url: 'https://github.com/yingchi0619/miniweather',
     },
     {
