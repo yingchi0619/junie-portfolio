@@ -43,6 +43,7 @@ import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import { profile } from './content';
 const Scene = lazy(() => import('./SystemScene'));
+const DeliveryRush = lazy(() => import('./DeliveryRush'));
 const spring = {
   type: 'spring' as const,
   stiffness: 180,
@@ -252,9 +253,14 @@ function Hero({
             I connect software engineering and data analytics with the
             real-world complexity of last-mile logistics.
           </p>
-          <Magnetic href="#work" className="primary-button">
-            Explore selected work <ArrowDown size={17} />
-          </Magnetic>
+          <div className="hero-actions">
+            <Magnetic href="#work" className="primary-button">
+              Explore selected work <ArrowDown size={17} />
+            </Magnetic>
+            <Magnetic href="#play" className="hero-play-button">
+              Play Delivery Rush <ArrowRight size={17} />
+            </Magnetic>
+          </div>
           <div className="hero-credentials">
             <span>NYU TANDON / M.S.</span>
             <span>GOFO / CAPACITY OPERATIONS</span>
@@ -403,7 +409,7 @@ function Explorer({
   return (
     <section id="work" className="work section">
       <div className="section-top">
-        <span className="eyebrow">01 / PROJECT EXPLORER</span>
+        <span className="eyebrow">02 / PROJECT EXPLORER</span>
         <span className="section-note">FOUR WAYS INTO THE WORK</span>
       </div>
       <div className="work-heading">
@@ -668,7 +674,7 @@ function Journey({ onProject }: { onProject: (n: number) => void }) {
   return (
     <section id="experience" className="journey section">
       <div className="section-top">
-        <span className="eyebrow">03 / EXPERIENCE & EDUCATION</span>
+        <span className="eyebrow">04 / EXPERIENCE & EDUCATION</span>
         <span className="section-note">CONTEXT SHAPES THE QUESTIONS</span>
       </div>
       <h2>
@@ -805,6 +811,7 @@ export default function Home() {
         </a>
         <nav aria-label="Main navigation">
           {[
+            ['play', 'Play'],
             ['work', 'Work'],
             ['playground', 'Playground'],
             ['experience', 'Experience'],
@@ -833,11 +840,30 @@ export default function Home() {
           }}
           onProject={setProject}
         />
+        <Suspense
+          fallback={
+            <section id="play" className="delivery-rush-loading">
+              <span>Loading Delivery Rush…</span>
+            </section>
+          }
+        >
+          <DeliveryRush
+            onSeeProject={() => {
+              setProject(0);
+              document.getElementById('work')?.scrollIntoView({
+                behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
+                  .matches
+                  ? 'instant'
+                  : 'smooth',
+              });
+            }}
+          />
+        </Suspense>
         <Explorer index={project} setIndex={setProject} />
         <Playground />
         <Journey onProject={setProject} />
         <section id="contact" className="contact section">
-          <span className="eyebrow">04 / THE NEXT CONNECTION</span>
+          <span className="eyebrow">05 / THE NEXT CONNECTION</span>
           <h2>
             Good systems start
             <br />

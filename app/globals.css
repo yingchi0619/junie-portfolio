@@ -218,6 +218,33 @@ h1 em {
 .primary-button:hover {
   background: #d1ecff;
 }
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.hero-play-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 50px;
+  padding: 0 4px;
+  border-bottom: 1px solid #7195a8;
+  color: #c6dbe5;
+  font-size: 13px;
+}
+.hero-play-button:hover {
+  color: #b6dfff;
+}
+.delivery-rush-loading {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  background: #e9e9e3;
+  color: #38515e;
+  font: 11px monospace;
+}
 .hero-credentials {
   font-family: monospace;
   font-size: 9px;
@@ -1786,10 +1813,10 @@ h2 > span {
     display: none;
   }
   nav {
-    gap: 19px;
+    gap: 14px;
   }
   nav a {
-    font-size: 11px;
+    font-size: 10px;
     padding: 24px 0;
   }
   nav a > span {
@@ -1824,6 +1851,13 @@ h2 > span {
     font-size: 12px;
     padding: 15px 20px;
     gap: 27px;
+  }
+  .hero-actions {
+    gap: 13px;
+  }
+  .hero-play-button {
+    font-size: 11px;
+    gap: 8px;
   }
   .hero-credentials {
     display: none;

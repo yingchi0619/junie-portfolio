@@ -70,7 +70,7 @@ export default function Playground() {
   return (
     <section id="playground" className="playground section">
       <div className="section-top">
-        <span className="eyebrow">02 / OPERATIONS PLAYGROUND</span>
+        <span className="eyebrow">03 / OPERATIONS PLAYGROUND</span>
         <span className="synthetic">
           <i /> Synthetic demo data
         </span>
