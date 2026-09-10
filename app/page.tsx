@@ -41,9 +41,9 @@ import {
 } from '@/components/ui/accordion';
 import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
+import DeliveryDash from './DeliveryDash';
 import { profile } from './content';
 const Scene = lazy(() => import('./SystemScene'));
-const DeliveryRush = lazy(() => import('./DeliveryRush'));
 const spring = {
   type: 'spring' as const,
   stiffness: 180,
@@ -258,7 +258,7 @@ function Hero({
               Explore selected work <ArrowDown size={17} />
             </Magnetic>
             <Magnetic href="#play" className="hero-play-button">
-              Play Delivery Rush <ArrowRight size={17} />
+              Play Delivery Dash <ArrowRight size={17} />
             </Magnetic>
           </div>
           <div className="hero-credentials">
@@ -843,11 +843,11 @@ export default function Home() {
         <Suspense
           fallback={
             <section id="play" className="delivery-rush-loading">
-              <span>Loading Delivery Rush…</span>
+              <span>Loading Delivery Dash…</span>
             </section>
           }
         >
-          <DeliveryRush
+          <DeliveryDash
             onSeeProject={() => {
               setProject(0);
               document.getElementById('work')?.scrollIntoView({
