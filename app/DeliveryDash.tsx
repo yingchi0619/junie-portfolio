@@ -1,931 +1,897 @@
 'use client';
-/* oxlint-disable react/react-compiler -- The timed game loop intentionally coordinates related state from effects. */
-
-import { Canvas, useFrame } from '@react-three/fiber';
-import { Environment, Float, RoundedBox } from '@react-three/drei';
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+/* oxlint-disable react/react-compiler -- DashGame is an external simulation clock, with explicit UI snapshots. */
+/* oxlint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex -- This focusable application surface provides pointer drawing and documented keyboard controls. */
 import {
-  ArrowRight,
-  Pause,
+  Component,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type PointerEvent,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
+import { motion } from 'motion/react';
+import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
+import {
+  ArrowUpRight,
   Play,
+  Pause,
   RotateCcw,
   Volume2,
   VolumeX,
   X,
+  Undo2,
+  Keyboard,
+  Hand,
+  ArrowRight,
 } from 'lucide-react';
+import DeliveryDashCanvas from './DeliveryDashCanvas';
 import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
-import * as THREE from 'three';
+  DashGame,
+  START,
+  point,
+  project,
+  unproject,
+  distance,
+  deliveryDashTitle,
+  type Point,
+  type Notice,
+} from './delivery-dash-logic';
+import { COPY, type Lang } from './delivery-dash-copy';
 import './delivery-dash.css';
-import { deliveryDashTitle } from './delivery-dash-logic';
 
-type Point = { x: number; y: number };
-type Stop = Point & { id: number; express?: boolean };
-type Phase =
-  | 'preview'
-  | 'tutorial'
-  | 'playing'
-  | 'driving'
-  | 'paused'
-  | 'level'
-  | 'result';
-type Lang = 'en' | 'zh';
-const LEVELS = [
-  {
-    stops: [
-      { x: 30, y: 28 },
-      { x: 72, y: 35 },
-      { x: 67, y: 72 },
-    ],
-    blocks: [] as Point[],
-  },
-  {
-    stops: [
-      { x: 24, y: 25 },
-      { x: 50, y: 22 },
-      { x: 76, y: 30 },
-      { x: 28, y: 70 },
-      { x: 72, y: 70 },
-    ],
-    blocks: [{ x: 51, y: 48 }],
-    coffee: { x: 37, y: 50 },
-  },
-  {
-    stops: [
-      { x: 22, y: 24 },
-      { x: 48, y: 22 },
-      { x: 77, y: 28 },
-      { x: 24, y: 69 },
-      { x: 52, y: 74 },
-      { x: 78, y: 66 },
-    ],
-    blocks: [{ x: 62, y: 47 }],
-    coffee: { x: 36, y: 58 },
-    rain: true,
-  },
-];
-const C = {
-  en: {
-    k: '01 / INTERACTIVE EXPERIENCE',
-    syn: 'SYNTHETIC · NO COMPANY DATA',
-    tag: 'Draw. Drive. Deliver.',
-    intro: 'Trace one smart route through a living miniature city.',
-    start: 'Start Game',
-    tutorial: 'Draw a route to the glowing building.',
-    nice: 'Nice. Now connect them all.',
-    score: 'Score',
-    time: 'Time',
-    fuel: 'Fuel',
-    deliveries: 'Deliveries',
-    drive: 'Drive Route',
-    clear: 'Clear',
-    level: 'LEVEL',
-    complete: 'CITY COMPLETE',
-    perfect: 'Perfect Route ×3',
-    again: 'Play Again',
-    hard: 'Hard Mode',
-    built: 'See How I Built It',
-    helper:
-      'Start at the warehouse, draw through the glowing buildings, then release.',
-    explain:
-      'You just solved a simplified last-mile routing problem: connecting multiple destinations while balancing distance, time and changing road conditions.',
-    scenic: 'You delivered everything. The scenic route was… ambitious.',
-  },
-  zh: {
-    k: '01 / 互动体验',
-    syn: '合成体验 · 不含公司数据',
-    tag: '画路线。开车。送达。',
-    intro: '在一座会呼吸的微缩城市里，画出一条聪明路线。',
-    start: '开始游戏',
-    tutorial: '从仓库画到发光建筑。',
-    nice: '很好。现在把它们全部连起来。',
-    score: '得分',
-    time: '时间',
-    fuel: '燃油',
-    deliveries: '送达',
-    drive: '出发',
-    clear: '清除',
-    level: '关卡',
-    complete: '城市配送完成',
-    perfect: '完美路线 ×3',
-    again: '再玩一次',
-    hard: '困难模式',
-    built: '查看实现方式',
-    helper: '从仓库出发，画线经过发光建筑，松手后车辆立即行驶。',
-    explain:
-      '你刚刚解决了一个简化的末端配送路线问题：在距离、时间和变化的道路状况之间连接多个目的地。',
-    scenic: '全部送达。只是这条观光路线……很有雄心。',
-  },
-};
-const d = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
-const pathLength = (p: Point[]) =>
-  p.slice(1).reduce((n, v, i) => n + d(p[i], v), 0);
-function City({
-  level,
-  stops,
-  van,
-  lit,
-  trafficOpen,
-  visible,
-  reduced,
-}: {
-  level: number;
-  stops: Stop[];
-  van: Point;
-  lit: number[];
-  trafficOpen: boolean;
-  visible: boolean;
+type SceneProps = {
+  game: DashGame;
+  active: boolean;
   reduced: boolean;
-}) {
-  const ref = useRef<THREE.Group>(null);
-  useFrame((s) => {
-    if (visible && ref.current && !reduced)
-      ref.current.rotation.y = Math.sin(s.clock.elapsedTime * 4) * 0.025;
-  });
-  const w = (p?: Point): [number, number, number] => [
-    ((p?.x ?? 50) - 50) / 5,
-    0.2,
-    ((p?.y ?? 50) - 50) / 5,
-  ];
-  const blocks = useMemo(
-    () =>
-      Array.from({ length: reduced ? 20 : 40 }, (_, i) => ({
-        x: ((i * 37) % 92) + 4,
-        y: ((i * 53) % 88) + 6,
-        h: 0.5 + ((i * 17) % 9) / 8,
-      })).filter(
-        (b) => d(b, { x: 50, y: 50 }) > 13 && stops.every((s) => d(b, s) > 10),
-      ),
-    [stops, reduced],
-  );
-  return (
-    <>
-      <color attach="background" args={['#07131a']} />
-      <fog attach="fog" args={['#07131a', 10, 22]} />
-      <ambientLight intensity={1.2} />
-      <directionalLight
-        position={[4, 10, 5]}
-        intensity={2.2}
-        color="#d8efff"
-        castShadow={!reduced}
-      />
-      <pointLight
-        position={[0, 3, 0]}
-        intensity={25}
-        color="#9ddcff"
-        distance={10}
-      />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-        <planeGeometry args={[22, 22]} />
-        <meshStandardMaterial color="#0b1d25" roughness={0.92} />
-      </mesh>
-      {[-6, -3, 0, 3, 6].map((n) => (
-        <group key={n}>
-          <mesh position={[n, 0.012, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[0.72, 20]} />
-            <meshStandardMaterial color="#18313b" />
-          </mesh>
-          <mesh position={[0, 0.014, n]} rotation={[-Math.PI / 2, 0, 0]}>
-            <planeGeometry args={[20, 0.72]} />
-            <meshStandardMaterial color="#18313b" />
-          </mesh>
-        </group>
-      ))}
-      {blocks.map((b, i) => (
-        <group key={i} position={w(b)}>
-          <RoundedBox
-            args={[0.72, b.h, 0.72]}
-            radius={0.05}
-            position={[0, b.h / 2, 0]}
-            castShadow
-          >
-            <meshStandardMaterial color="#17313b" metalness={0.15} />
-          </RoundedBox>
-        </group>
-      ))}
-      <group position={w({ x: 50, y: 50 })}>
-        <RoundedBox
-          args={[1.7, 0.65, 1.5]}
-          radius={0.08}
-          position={[0, 0.32, 0]}
-        >
-          <meshStandardMaterial color="#325464" metalness={0.35} />
-        </RoundedBox>
-        <pointLight
-          position={[0, 1.1, 0]}
-          intensity={12}
-          color="#aee5ff"
-          distance={4}
-        />
-      </group>
-      {stops.map((s) => (
-        <group key={s.id} position={w(s)}>
-          <RoundedBox
-            args={[1.05, 1.5 + (s.id % 3) * 0.25, 1.05]}
-            radius={0.06}
-            position={[0, 0.75, 0]}
-            castShadow
-          >
-            <meshStandardMaterial
-              color={
-                s.express
-                  ? '#a47a2d'
-                  : lit.includes(s.id)
-                    ? '#587066'
-                    : '#1d3b46'
-              }
-              emissive={
-                s.express
-                  ? '#ffc85a'
-                  : lit.includes(s.id)
-                    ? '#ffd27a'
-                    : '#163744'
-              }
-              emissiveIntensity={s.express || lit.includes(s.id) ? 1.8 : 0.25}
-            />
-          </RoundedBox>
-          <pointLight
-            position={[0, 1.4, 0]}
-            intensity={s.express ? 14 : lit.includes(s.id) ? 10 : 4}
-            color={s.express ? '#ffd36c' : '#c0ebff'}
-            distance={3}
-          />
-        </group>
-      ))}
-      {LEVELS[level].blocks.map((b, i) => (
-        <group key={`b${i}`} position={w(b)}>
-          <mesh position={[0, 0.25, 0]}>
-            <boxGeometry args={[2.2, 0.4, 0.7]} />
-            <meshStandardMaterial color="#8b4938" />
-          </mesh>
-        </group>
-      ))}
-      {level === 2 && (
-        <mesh position={[0, 0.04, 3]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[12, 0.75]} />
-          <meshBasicMaterial
-            color={trafficOpen ? '#2a6672' : '#7f3435'}
-            transparent
-            opacity={0.72}
-          />
-        </mesh>
-      )}
-      <group ref={ref} position={w(van)}>
-        <mesh position={[0, 0.34, 0]} castShadow>
-          <boxGeometry args={[0.72, 0.48, 1.05]} />
-          <meshStandardMaterial color="#c9edff" metalness={0.45} />
-        </mesh>
-        <mesh position={[0, 0.58, -0.08]}>
-          <boxGeometry args={[0.65, 0.34, 0.55]} />
-          <meshStandardMaterial color="#5e94a8" />
-        </mesh>
-      </group>
-      {LEVELS[level].coffee && (
-        <Float speed={1.2} floatIntensity={0.15}>
-          <group position={w(LEVELS[level].coffee!)}>
-            <mesh>
-              <cylinderGeometry args={[0.25, 0.2, 0.45, 16]} />
-              <meshStandardMaterial color="#d89d69" />
-            </mesh>
-            <pointLight
-              position={[0, 0.7, 0]}
-              intensity={5}
-              color="#ffb86b"
-              distance={2}
-            />
-          </group>
-        </Float>
-      )}
-      <Environment preset="city" />
-    </>
-  );
+  compact: boolean;
+  onReady: () => void;
+  onFail: () => void;
+};
+class SceneBoundary extends Component<
+  { onFail: () => void; children: ReactNode },
+  { failed: boolean }
+> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    this.props.onFail();
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
 }
-
-export default function DeliveryDash({
-  onSeeProject,
-}: {
-  onSeeProject: () => void;
-}) {
-  const reduced = !!useReducedMotion(),
+export default function DeliveryDash() {
+  const [game] = useState(() => new DashGame()),
+    [lang, setLang] = useState<Lang>('en'),
+    [near, setNear] = useState(false),
+    [visible, setVisible] = useState(false),
+    [docActive, setDocActive] = useState(true),
+    [scene, setScene] = useState<ComponentType<SceneProps> | null>(null),
+    [mode, setMode] = useState<'3d' | '2d'>('3d'),
+    [ready, setReady] = useState(false),
+    [sound, setSound] = useState(false),
+    [keys, setKeys] = useState(false),
+    [details, setDetails] = useState(false),
+    [size, setSize] = useState({ width: 900, height: 580 }),
+    [, update] = useState(0);
+  const t = COPY[lang],
+    reduced = !!useReducedMotion(),
     root = useRef<HTMLElement>(null),
-    board = useRef<HTMLDivElement>(null);
-  const deliveredRef = useRef(new Set<number>());
-  const [lang, setLang] = useState<Lang>('en');
-  const t = C[lang];
-  const [phase, setPhase] = useState<Phase>('preview'),
-    [level, setLevel] = useState(0),
-    [hard, setHard] = useState(false),
-    [time, setTime] = useState(65),
-    [fuel, setFuel] = useState(100),
-    [score, setScore] = useState(0),
-    [path, setPath] = useState<Point[]>([]),
-    [van, setVan] = useState<Point>({ x: 50, y: 50 }),
-    [delivered, setDelivered] = useState<number[]>([]),
-    [combo, setCombo] = useState(0),
-    [bestCombo, setBestCombo] = useState(0),
-    [expressHit, setExpressHit] = useState(false),
-    [expressLive, setExpressLive] = useState(false),
-    [coffee, setCoffee] = useState(false),
-    [notice, setNotice] = useState(''),
-    [drawing, setDrawing] = useState(false),
-    [visible, setVisible] = useState(true),
-    [sound, setSound] = useState(true),
-    [trafficOpen, setTrafficOpen] = useState(false),
-    [totalRoute, setTotalRoute] = useState(0),
-    [repeats, setRepeats] = useState(0),
-    [completedCount, setCompletedCount] = useState(0),
-    [invalid, setInvalid] = useState(false),
-    [webgl, setWebgl] = useState(true);
-  const stops = useMemo<Stop[]>(
-    () =>
-      LEVELS[level].stops.map((p, id) => ({
-        ...p,
-        id,
-        express: level === 2 && id === 5 && expressLive,
-      })),
-    [level, expressLive],
-  );
-  const beep = useCallback(
-    (f = 600) => {
-      if (!sound) return;
-      const a = new AudioContext(),
-        o = a.createOscillator(),
-        g = a.createGain();
-      o.frequency.value = f;
-      g.gain.value = 0.025;
-      g.gain.exponentialRampToValueAtTime(0.001, a.currentTime + 0.13);
-      o.connect(g).connect(a.destination);
-      o.start();
-      o.stop(a.currentTime + 0.13);
-    },
-    [sound],
-  );
-  const reset = useCallback((hm = false) => {
-    setHard(hm);
-    setLevel(0);
-    setTime(hm ? 55 : 65);
-    setFuel(hm ? 84 : 100);
-    setScore(0);
-    setPath([]);
-    setVan({ x: 50, y: 50 });
-    setDelivered([]);
-    setCombo(0);
-    setBestCombo(0);
-    setExpressHit(false);
-    setExpressLive(false);
-    setCoffee(false);
-    setTotalRoute(0);
-    setRepeats(0);
-    setCompletedCount(0);
-    setInvalid(false);
-    deliveredRef.current.clear();
-    setNotice('');
-    let learned = false;
+    shell = useRef<HTMLDivElement>(null),
+    board = useRef<HTMLDivElement>(null),
+    caseStudy = useRef<HTMLElement>(null),
+    stroke = useRef<Point | null>(null),
+    modeRef = useRef<'3d' | '2d'>('3d'),
+    audio = useRef<AudioContext | null>(null),
+    lastSound = useRef(-1),
+    soundRef = useRef(sound),
+    tutorialStored = useRef(false);
+  const refresh = () => update((n) => n + 1);
+  const onReady = useCallback(() => setReady(true), []),
+    onFail = useCallback(() => {
+      // R3F releases its old context on unmount; ignore that after an intentional switch.
+      if (modeRef.current === '2d') return;
+      modeRef.current = '2d';
+      setMode('2d');
+      setReady(false);
+    }, []);
+  const active = visible && docActive && !game.paused;
+  useEffect(() => {
+    soundRef.current = sound;
+  }, [sound]);
+  useEffect(() => {
     try {
-      learned = localStorage.getItem('delivery-dash-tutorial') === 'done';
+      const l = localStorage.getItem('delivery-dash-language');
+      if (l === 'zh' || l === 'en') setLang(l);
+      tutorialStored.current =
+        localStorage.getItem('delivery-dash-learned') === 'yes';
     } catch {}
-    setPhase(learned ? 'playing' : 'tutorial');
   }, []);
   useEffect(() => {
-    try {
-      const canvas = document.createElement('canvas');
-      setWebgl(!!(canvas.getContext('webgl2') || canvas.getContext('webgl')));
-    } catch {
-      setWebgl(false);
-    }
+    const observer = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) setNear(true);
+      },
+      { rootMargin: '250px' },
+    );
+    if (root.current) observer.observe(root.current);
+    return () => observer.disconnect();
   }, []);
   useEffect(() => {
-    const o = new IntersectionObserver(([e]) => setVisible(e.isIntersecting), {
-      threshold: 0.05,
-    });
-    if (root.current) o.observe(root.current);
+    const observer = new IntersectionObserver(
+      ([e]) => setVisible(e.isIntersecting),
+      { threshold: 0.12 },
+    );
+    if (shell.current) observer.observe(shell.current);
+    return () => observer.disconnect();
+  }, []);
+  useEffect(() => {
+    if (!near) return;
+    let alive = true;
+    import('./DeliveryDashScene')
+      .then((m) => {
+        if (alive) setScene(() => m.default);
+      })
+      .catch(() => {
+        if (alive) onFail();
+      });
+    return () => {
+      alive = false;
+    };
+  }, [near, onFail]);
+  useEffect(() => {
+    const sync = () => setDocActive(!document.hidden);
+    document.addEventListener('visibilitychange', sync);
+    return () => document.removeEventListener('visibilitychange', sync);
+  }, []);
+  useEffect(() => {
+    if (!board.current) return;
+    const o = new ResizeObserver(([e]) =>
+      setSize({ width: e.contentRect.width, height: e.contentRect.height }),
+    );
+    o.observe(board.current);
     return () => o.disconnect();
   }, []);
-  useEffect(() => {
-    if (phase !== 'playing' || !visible) return;
-    const id = setInterval(() => setTime((v) => Math.max(0, v - 1)), 1000);
-    return () => clearInterval(id);
-  }, [phase, visible]);
-  useEffect(() => {
-    if (time === 0 && (phase === 'playing' || phase === 'driving'))
-      setPhase('result');
-  }, [time, phase]);
-  useEffect(() => {
-    if (level !== 2 || phase === 'result') return;
-    const a = setTimeout(() => setExpressLive(true), 2500),
-      b = setTimeout(() => setExpressLive(false), 9500);
-    return () => {
-      clearTimeout(a);
-      clearTimeout(b);
-    };
-  }, [level, phase]);
-  useEffect(() => {
-    if (level !== 2) return;
-    const id = setInterval(() => setTrafficOpen((v) => !v), 2800);
-    return () => clearInterval(id);
-  }, [level]);
-  const fromEvent = (e: React.PointerEvent) => {
-    const r = board.current!.getBoundingClientRect();
-    return {
-      x: Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100)),
-      y: Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100)),
+  useEffect(
+    () => () => {
+      void audio.current?.close();
+    },
+    [],
+  );
+  const ping = (combo: number, gold = false) => {
+    if (!soundRef.current || !audio.current) return;
+    const c = audio.current,
+      g = c.createGain(),
+      o = c.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(gold ? 1046 : 440 + combo * 85, c.currentTime);
+    o.frequency.exponentialRampToValueAtTime(
+      gold ? 1568 : 660 + combo * 85,
+      c.currentTime + 0.12,
+    );
+    g.gain.setValueAtTime(0.0001, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.045, c.currentTime + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.22);
+    o.connect(g).connect(c.destination);
+    o.start();
+    o.stop(c.currentTime + 0.23);
+    o.onended = () => {
+      o.disconnect();
+      g.disconnect();
     };
   };
-  const add = (p: Point) => {
-    const target = stops.find((s) => !delivered.includes(s.id) && d(s, p) < 8);
-    const blocked =
-      LEVELS[level].blocks.some((b) => d(b, p) < 8) ||
-      (level === 2 &&
-        !trafficOpen &&
-        Math.abs(p.y - 69) < 4 &&
-        p.x > 34 &&
-        p.x < 66);
-    if (blocked) {
-      setInvalid(true);
-      setNotice(
-        lang === 'en' ? 'Road blocked — draw around it.' : '道路封闭，请绕行。',
-      );
-      return;
-    }
-    setInvalid(false);
-    const grid = [20, 35, 50, 65, 80],
-      nx = grid.reduce((a, v) =>
-        Math.abs(v - p.x) < Math.abs(a - p.x) ? v : a,
-      ),
-      ny = grid.reduce((a, v) =>
-        Math.abs(v - p.y) < Math.abs(a - p.y) ? v : a,
-      ),
-      road =
-        Math.abs(nx - p.x) < Math.abs(ny - p.y)
-          ? { x: nx, y: p.y }
-          : { x: p.x, y: ny },
-      snap = target ? { x: target.x, y: target.y } : road;
-    setPath((old) => {
-      if (old.length && d(old.at(-1)!, snap) < 1.8) return old;
-      const next = [...old, snap];
-      setFuel(
-        Math.max(
-          0,
-          (hard ? 84 : 100) - pathLength(next) * 0.58 - totalRoute * 0.12,
-        ),
-      );
-      return next;
-    });
-  };
-  const begin = (e: React.PointerEvent) => {
-    if (!['playing', 'tutorial'].includes(phase)) return;
-    const p = fromEvent(e);
-    if (d(p, van) > 14) {
-      setNotice(lang === 'en' ? 'Start at the van.' : '请从货车开始。');
-      beep(190);
-      return;
-    }
-    e.currentTarget.setPointerCapture(e.pointerId);
-    setDrawing(true);
-    setPath([van]);
-    setNotice('');
-    setInvalid(false);
-  };
-  const drive = useCallback(() => {
-    if (path.length < 2 || phase === 'driving') return;
-    setDrawing(false);
-    setPhase('driving');
-    const route = path,
-      len = pathLength(route);
-    setTotalRoute((v) => v + len);
-    const seen = new Set<string>();
-    let dup = 0;
-    route.forEach((p) => {
-      const k = `${Math.round(p.x / 7)}-${Math.round(p.y / 7)}`;
-      if (seen.has(k)) dup++;
-      seen.add(k);
-    });
-    setRepeats((v) => v + dup);
-    const duration = Math.max(1300, len * (coffee ? 12 : hard ? 24 : 19)),
-      started = performance.now();
-    let last = 0;
-    const tick = (now: number) => {
-      const q = Math.min(1, (now - started) / duration),
-        p = route[
-          Math.min(route.length - 1, Math.floor(q * (route.length - 1)))
-        ] ??
-          route[0] ?? { x: 50, y: 50 };
-      setVan(p);
-      stops.forEach((s) => {
-        if (!deliveredRef.current.has(s.id) && d(p, s) < 7) {
-          deliveredRef.current.add(s.id);
-          setDelivered((v) => (v.includes(s.id) ? v : [...v, s.id]));
-          setCompletedCount((v) => v + 1);
-          const quick = now - last < 750;
-          last = now;
-          setCombo((c) => {
-            const n = quick ? c + 1 : 1;
-            setBestCombo((b) => Math.max(b, n));
-            return n;
-          });
-          setScore((v) => v + (s.express ? 900 : 220) + combo * 35);
-          if (s.express) setExpressHit(true);
-          if (phase === 'tutorial') setNotice(t.nice);
-          beep(680 + combo * 70);
-        }
-      });
-      const cafe = LEVELS[level].coffee;
-      if (cafe && !coffee && d(p, cafe) < 7) {
-        setCoffee(true);
-        setNotice(lang === 'en' ? 'Coffee Boost!' : '咖啡加速！');
-        beep(920);
+  useEffect(() => {
+    if (!active || !ready) return;
+    let id = 0,
+      last = performance.now(),
+      published = last;
+    const frame = (now: number) => {
+      const dt = Math.min(0.25, (now - last) / 1000);
+      last = now;
+      if (game.phase === 'preview') {
+        game.clock += dt;
+        const route = [20, 21, 22, 17, 12, 11, 10, 15, 20],
+          p = (game.clock * 0.65) % (route.length - 1),
+          i = Math.floor(p),
+          a = point(route[i]),
+          b = point(route[i + 1]);
+        game.van = {
+          x: a.x + (b.x - a.x) * (p - i),
+          z: a.z + (b.z - a.z) * (p - i),
+        };
+        game.heading = Math.atan2(b.x - a.x, b.z - a.z);
+      } else {
+        // Catch up in bounded steps so slow render frames do not grant extra time or fuel.
+        let remaining = dt;
+        while (remaining > 0) { const step = Math.min(.05, remaining); game.tick(step); remaining -= step; }
       }
-      if (q < 1) requestAnimationFrame(tick);
-      else {
-        setPath([]);
-        setPhase('playing');
-        setCoffee(false);
+      const event = game.events.at(-1);
+      if (event && event.time !== lastSound.current) {
+        lastSound.current = event.time;
+        ping(event.combo, event.gold);
       }
+      if (
+        !game.tutorial &&
+        !tutorialStored.current &&
+        game.phase !== 'preview'
+      ) {
+        tutorialStored.current = true;
+        try {
+          localStorage.setItem('delivery-dash-learned', 'yes');
+        } catch {}
+      }
+      if (now - published > 75) {
+        update((n) => n + 1);
+        published = now;
+      }
+      id = requestAnimationFrame(frame);
     };
-    requestAnimationFrame(tick);
-  }, [path, phase, coffee, hard, stops, combo, beep, level, lang, t.nice]);
-  useEffect(() => {
-    if (!stops.length || delivered.length < stops.length) return;
-    const perfect = repeats === 0 && fuel > 35;
-    if (perfect) {
-      setScore((v) => v + 750);
-      setNotice(t.perfect);
-    } else setNotice(t.complete);
+    id = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(id);
+  }, [active, ready, game]);
+  const switchLang = () => {
+    const l = lang === 'en' ? 'zh' : 'en';
+    setLang(l);
     try {
-      localStorage.setItem('delivery-dash-tutorial', 'done');
+      localStorage.setItem('delivery-dash-language', l);
     } catch {}
-    const id = setTimeout(() => {
-      if (level < 2) {
-        setLevel((v) => v + 1);
-        setDelivered([]);
-        deliveredRef.current.clear();
-        setPath([]);
-        setVan({ x: 50, y: 50 });
-        setFuel((v) => Math.min(hard ? 84 : 100, v + 28));
-        setPhase('level');
-        setTimeout(() => setPhase('playing'), 900);
-      } else setPhase('result');
-    }, 1200);
-    return () => clearTimeout(id);
-  }, [delivered.length, stops.length, level, repeats, fuel, hard, t]);
-  const route = path.map((p) => `${p.x},${p.y}`).join(' '),
-    efficiency = Math.max(
-      28,
-      Math.min(
-        100,
-        Math.round(100 - (totalRoute - 185) * 0.22 - repeats * 0.8),
-      ),
-    ),
-    title = deliveryDashTitle({
-      efficiency,
-      bestCombo,
-      express: expressHit,
-      elapsed: (hard ? 55 : 65) - time,
-    }),
-    totalStops = LEVELS.reduce((n, l) => n + l.stops.length, 0);
+  };
+  const start = (hard = false) => {
+    game.reset(hard, !tutorialStored.current);
+    stroke.current = null;
+    lastSound.current = -1;
+    refresh();
+    requestAnimationFrame(() => {
+      shell.current?.scrollIntoView({
+        block: 'nearest',
+        behavior: reduced ? 'instant' : 'smooth',
+      });
+      board.current?.focus({ preventScroll: true });
+    });
+  };
+  const pause = () => {
+    if (game.phase === 'preview' || game.phase === 'result') return;
+    game.paused = !game.paused;
+    stroke.current = null;
+    if (game.phase === 'drawing') game.cancel();
+    refresh();
+  };
+  const toggleSound = () => {
+    if (!sound) {
+      try {
+        audio.current ??= new AudioContext();
+        void audio.current.resume();
+      } catch {}
+    }
+    setSound(!sound);
+  };
+  const getPoint = (e: PointerEvent) => {
+    const r = board.current!.getBoundingClientRect();
+    return unproject(
+      e.clientX - r.left,
+      e.clientY - r.top,
+      r.width,
+      r.height,
+      game.camera,
+    );
+  };
+  const down = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || !ready || (e.target as HTMLElement).closest('button'))
+      return;
+    const p = getPoint(e);
+    if (game.begin(p)) {
+      e.preventDefault();
+      board.current?.focus({ preventScroll: true });
+      e.currentTarget.setPointerCapture(e.pointerId);
+      stroke.current = p;
+    }
+    refresh();
+  };
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    if (!stroke.current || game.paused) return;
+    const p = getPoint(e),
+      last = stroke.current,
+      steps = Math.min(80, Math.max(1, Math.ceil(distance(last, p) / 0.18)));
+    for (let i = 1; i <= steps; i++)
+      game.draw({
+        x: last.x + ((p.x - last.x) * i) / steps,
+        z: last.z + ((p.z - last.z) * i) / steps,
+      });
+    stroke.current = p;
+    refresh();
+  };
+  const up = (e: PointerEvent<HTMLDivElement>) => {
+    if (!stroke.current) return;
+    move(e);
+    stroke.current = null;
+    game.release();
+    refresh();
+  };
+  const key = (e: KeyboardEvent<HTMLDivElement>) => {
+    if ((e.target as HTMLElement).closest('button')) return;
+    const arrows: Record<string, [number, number]> = {
+      ArrowUp: [0, -1],
+      ArrowDown: [0, 1],
+      ArrowLeft: [-1, 0],
+      ArrowRight: [1, 0],
+    };
+    if (arrows[e.key]) {
+      e.preventDefault();
+      game.keyboard(...arrows[e.key]);
+      setKeys(true);
+      refresh();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      game.release();
+      refresh();
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      game.undo();
+      refresh();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      game.cancel();
+      refresh();
+    } else if (e.code === 'Space') {
+      e.preventDefault();
+      pause();
+    }
+  };
+  const showCase = () => {
+    setDetails(true);
+    requestAnimationFrame(() => {
+      caseStudy.current?.scrollIntoView({
+        block: 'start',
+        behavior: reduced ? 'instant' : 'smooth',
+      });
+      caseStudy.current?.focus({ preventScroll: true });
+    });
+  };
+  const routeEnd = game.route.length ? point(game.route.at(-1)!) : game.van,
+    tip = project(routeEnd, size.width, size.height, 0, game.camera),
+    preview = game.phase === 'preview',
+    result = game.phase === 'result',
+    playing = !preview && !result;
+  const notices: Record<Notice, string> = {
+    start: t.startAt,
+    nice: t.nice,
+    blocked: t.blocked,
+    road: t.road,
+    fuel: t.outFuel,
+    coffee: t.coffee,
+    express: t.express,
+    perfect: t.perfect,
+    complete: t.complete,
+    traffic: t.traffic,
+    timeout: t.timeout,
+  };
+  const title = deliveryDashTitle({
+    efficiency: game.efficiency,
+    bestCombo: game.bestCombo,
+    express: game.expressCollected,
+    elapsed: game.elapsed,
+    won: game.won,
+  });
+  const Scene = scene;
   return (
-    <section id="play" ref={root} className="delivery-dash section">
-      <div className="dash-kicker">
-        <span>{t.k}</span>
-        <button onClick={() => setLang((v) => (v === 'en' ? 'zh' : 'en'))}>
-          {lang === 'en' ? '中文' : 'EN'}
-        </button>
-        <span>{t.syn}</span>
+    <section
+      id="play"
+      ref={root}
+      className="delivery-dash section"
+      lang={lang === 'zh' ? 'zh-CN' : 'en'}
+    >
+      <div className="dd-section-label">
+        <span>01 / {lang === 'en' ? 'PLAY SOMETHING' : '来玩一会儿'}</span>
+        <span>
+          {lang === 'en' ? 'A SMALL CITY, IN YOUR HANDS' : '一座小城，尽在指尖'}
+        </span>
       </div>
-      {phase === 'preview' ? (
-        <div className="dash-preview">
-          <div className="dash-preview-copy">
-            <span>PLAYABLE 3D CITY</span>
-            <h2>
-              Delivery <em>Dash.</em>
-            </h2>
-            <h3>{t.tag}</h3>
-            <p>{t.intro}</p>
-            <button className="dash-primary" onClick={() => reset(false)}>
-              {t.start}
-              <ArrowRight />
-            </button>
-            <small>45–75 SEC · MOUSE · TOUCH · KEYBOARD</small>
-          </div>
-          <div className="dash-preview-stage">
-            <Suspense
-              fallback={<div className="dash-load">Building the city…</div>}
+      <div
+        ref={shell}
+        className={`dd-shell ${preview ? 'dd-preview' : ''} ${result ? 'dd-ended' : ''}`}
+      >
+        <div className="dd-topline">
+          <a href="#play" aria-label="Delivery Dash" className="dd-wordmark">
+            delivery<span>dash</span>
+            <i>↗</i>
+          </a>
+          <div className="dd-top-actions">
+            <button
+              onClick={switchLang}
+              aria-label={lang === 'en' ? 'Switch to Chinese' : '切换为英文'}
             >
-              {webgl ? (
-                <Canvas
-                  dpr={[1, 1.5]}
-                  shadows={!reduced}
-                  camera={{ position: [8, 10, 10], fov: 42 }}
-                  frameloop={visible ? 'always' : 'never'}
-                >
-                  <City
-                    level={0}
-                    stops={LEVELS[0].stops.map((p, id) => ({ ...p, id }))}
-                    van={{ x: 50, y: 50 }}
-                    lit={[]}
-                    trafficOpen
-                    visible={visible}
-                    reduced={reduced}
-                  />
-                </Canvas>
-              ) : (
-                <div
-                  className="dash-2d-fallback"
-                  aria-label="Playable 2D city fallback"
-                >
-                  <i />
-                  <i />
-                  <i />
-                  <i />
-                  <b>2D CITY</b>
-                </div>
-              )}
-            </Suspense>
-            <div className="dash-preview-route" />
+              {lang === 'en' ? 'EN / 中文' : '中文 / EN'}
+            </button>
+            <button
+              className="dd-view-switch"
+              onClick={() => {
+                modeRef.current = modeRef.current === '3d' ? '2d' : '3d';
+                setMode(modeRef.current);
+                setReady(false);
+              }}
+            >
+              {mode === '3d' ? t.twoD : t.threeD}
+            </button>
+            <button
+              onClick={toggleSound}
+              aria-label={sound ? t.soundOff : t.soundOn}
+            >
+              {sound ? <Volume2 size={18} /> : <VolumeX size={18} />}
+            </button>
+            {playing && (
+              <button
+                onClick={() => {
+                  game.reset();
+                  game.phase = 'preview';
+                  refresh();
+                }}
+                aria-label={t.exit}
+              >
+                <X size={18} />
+              </button>
+            )}
           </div>
         </div>
-      ) : (
-        <div className="dash-shell">
-          <header className="dash-hud">
-            <strong>DASH</strong>
-            {(
-              [
-                [t.score, score],
-                [t.time, `${time}s`],
-                [t.fuel, `${Math.round(fuel)}%`],
-                [t.deliveries, `${delivered.length}/${stops.length}`],
-              ] as const
-            ).map(([k, v]) => (
-              <div key={k}>
-                <span>{k}</span>
-                <b>{v}</b>
-              </div>
-            ))}
-            <div className="dash-controls">
-              <button
-                onClick={() =>
-                  setPhase((v) => (v === 'paused' ? 'playing' : 'paused'))
-                }
-                aria-label={phase === 'paused' ? 'Resume' : 'Pause'}
-              >
-                {phase === 'paused' ? <Play /> : <Pause />}
-              </button>
-              <button onClick={() => reset(hard)} aria-label="Restart">
-                <RotateCcw />
-              </button>
-              <button
-                onClick={() => setSound((v) => !v)}
-                aria-label={sound ? 'Sound off' : 'Sound on'}
-              >
-                {sound ? <Volume2 /> : <VolumeX />}
-              </button>
-              <button onClick={() => setPhase('preview')} aria-label="Exit">
-                <X />
-              </button>
-            </div>
-          </header>
+        {playing && (
           <div
-            className={`dash-board ${drawing ? 'is-drawing' : ''} ${fuel < 18 ? 'low-fuel' : ''}`}
-            ref={board}
-            onPointerDown={begin}
-            onPointerMove={(e) => drawing && add(fromEvent(e))}
-            onPointerUp={drive}
-            onPointerCancel={() => setDrawing(false)}
+            className="dd-hud"
+            aria-label={lang === 'en' ? 'Game status' : '游戏状态'}
           >
-            {webgl ? (
-              <Canvas
-                dpr={[1, 1.45]}
-                shadows={!reduced}
-                camera={{ position: [8, 10, 10], fov: 42 }}
-                frameloop={visible ? 'always' : 'never'}
+            {[
+              [t.score, game.score.toLocaleString()],
+              [t.time, `${Math.ceil(game.remaining)}s`],
+              [
+                t.fuel,
+                `${Math.round(game.phase === 'drawing' ? game.previewFuel : game.fuelPercent)}%`,
+              ],
+              [
+                t.deliveries,
+                `${game.delivered.size}/${game.config.targets.length}`,
+              ],
+            ].map(([label, value], i) => (
+              <div
+                key={label}
+                className={i === 2 && game.previewFuel < 12 ? 'dd-warn' : ''}
               >
-                <Suspense fallback={null}>
-                  <City
-                    level={level}
-                    stops={stops}
-                    van={van}
-                    lit={delivered}
-                    trafficOpen={trafficOpen}
-                    visible={visible}
-                    reduced={reduced}
+                <span>{label}</span>
+                <strong>{value}</strong>
+                {i === 2 && (
+                  <i
+                    style={{
+                      width: `${game.phase === 'drawing' ? game.previewFuel : game.fuelPercent}%`,
+                    }}
                   />
-                </Suspense>
-              </Canvas>
-            ) : (
-              <div
-                className="dash-2d-fallback"
-                aria-label="Playable 2D city fallback"
-              >
-                <i />
-                <i />
-                <i />
-                <i />
-                <b>2D CITY</b>
+                )}
               </div>
-            )}
-            <svg
-              className="dash-route"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <polyline
-                points={route}
-                className={fuel <= 0 || invalid ? 'invalid' : ''}
+            ))}
+          </div>
+        )}
+        <div
+          ref={board}
+          className="dd-board"
+          tabIndex={0}
+          role="application"
+          aria-label={
+            lang === 'en'
+              ? 'Delivery Dash. Draw from the van along the streets. Arrow keys draw, Enter drives.'
+              : '配送冲刺。沿街道画线。方向键画线，回车出发。'
+          }
+          aria-describedby={keys ? 'dd-key-help' : undefined}
+          onPointerDown={down}
+          onPointerMove={move}
+          onPointerUp={up}
+          onPointerCancel={() => {
+            stroke.current = null;
+            game.cancel();
+            refresh();
+          }}
+          onKeyDown={key}
+          data-phase={game.phase}
+          data-round={game.level + 1}
+          data-renderer={mode}
+          data-ready={ready}
+        >
+          {near &&
+            (mode === '2d' ? (
+              <DeliveryDashCanvas
+                game={game}
+                active={active}
+                reduced={reduced}
+                onReady={onReady}
               />
-              {path.map((p, i) =>
-                stops.some((s) => d(s, p) < 1) ? (
-                  <circle key={i} cx={p.x} cy={p.y} r="1.2" />
-                ) : null,
-              )}
-            </svg>
-            <div className="dash-origin" style={{ left: '50%', top: '50%' }}>
-              <i />
-              WAREHOUSE
+            ) : (
+              Scene && (
+                <SceneBoundary onFail={onFail}>
+                  <Scene
+                    game={game}
+                    active={active}
+                    reduced={reduced}
+                    compact={size.width < 600}
+                    onReady={onReady}
+                    onFail={onFail}
+                  />
+                </SceneBoundary>
+              )
+            ))}
+          {!ready && (
+            <div className="dd-loading">
+              <span />
+              {t.load}
             </div>
-            {stops.map((s) => (
+          )}
+          {preview && (
+            <div className="dd-intro">
+              <span className="dd-pretitle">
+                {lang === 'en'
+                  ? 'THE ONE-MINUTE CITY BREAK'
+                  : '一分钟，闯进小城'}
+              </span>
+              <h2>
+                Delivery
+                <br />
+                <em>Dash.</em>
+              </h2>
+              <p className="dd-tagline">{t.tag}</p>
+              <p>{t.intro}</p>
               <button
-                key={s.id}
-                className={`dash-stop ${delivered.includes(s.id) ? 'done' : ''} ${s.express ? 'express' : ''}`}
-                style={{ left: `${s.x}%`, top: `${s.y}%` }}
-                onPointerDown={(e) => e.stopPropagation()}
-                onPointerUp={(e) => e.stopPropagation()}
-                onClick={() => {
-                  if (!drawing) {
-                    if (!path.length) setPath([van]);
-                    window.setTimeout(() => add(s), 0);
-                  }
-                }}
-                aria-label={`${s.express ? 'Express ' : ''}delivery stop ${s.id + 1}${delivered.includes(s.id) ? ', delivered' : ''}`}
+                className="dd-primary"
+                disabled={!ready}
+                onClick={() => start()}
               >
-                <i />
-                {delivered.includes(s.id) ? '✓' : s.express ? 'EXPRESS' : ''}
+                {t.start}
+                <ArrowRight size={20} />
               </button>
-            ))}
-            {LEVELS[level].blocks.map((b, i) => (
+              <small>{t.about}</small>
+            </div>
+          )}
+          {playing && (
+            <>
+              <div className="dd-round">
+                {t.level} {game.level + 1}
+                {lang === 'zh' ? ' 关' : ''}
+                <span>{game.config.names[lang === 'en' ? 0 : 1]}</span>
+              </div>
+              {game.tutorial &&
+                game.phase !== 'driving' &&
+                game.phase !== 'level' && (
+                  <div className="dd-tutorial" aria-live="polite">
+                    <svg viewBox={`0 0 ${size.width} ${size.height}`}>
+                      <path
+                        d={(() => {
+                          const a = project(
+                              point(START),
+                              size.width,
+                              size.height,
+                              0,
+                              game.camera,
+                            ),
+                            b = project(
+                              point(21),
+                              size.width,
+                              size.height,
+                              0,
+                              game.camera,
+                            );
+                          return `M${a.x} ${a.y} L${b.x} ${b.y}`;
+                        })()}
+                      />
+                    </svg>
+                    <p>{t.tutorial}</p>
+                    <span
+                      className="dd-hand"
+                      style={(() => {
+                        const a = project(
+                            point(START),
+                            size.width,
+                            size.height,
+                            0,
+                            game.camera,
+                          ),
+                          b = project(
+                            point(21),
+                            size.width,
+                            size.height,
+                            0,
+                            game.camera,
+                          );
+                        return {
+                          left: a.x,
+                          top: a.y,
+                          '--hand-x': `${b.x - a.x}px`,
+                          '--hand-y': `${b.y - a.y}px`,
+                        } as React.CSSProperties;
+                      })()}
+                    >
+                      <Hand size={22} />
+                    </span>
+                  </div>
+                )}
+              {game.config.targets
+                .filter((n) => game.route.includes(n) && !game.delivered.has(n))
+                .map((n) => {
+                  const p = project(
+                    point(n),
+                    size.width,
+                    size.height,
+                    0,
+                    game.camera,
+                  );
+                  return (
+                    <span
+                      key={n}
+                      className="dd-stop-check"
+                      style={{ left: p.x, top: p.y }}
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>
+                  );
+                })}
+              {game.phase === 'drawing' && (
+                <span
+                  className="dd-cursor"
+                  style={{ left: tip.x, top: tip.y }}
+                  aria-hidden="true"
+                />
+              )}
+              {game.invalid &&
+                (() => {
+                  const p = project(
+                    game.invalid,
+                    size.width,
+                    size.height,
+                    0,
+                    game.camera,
+                  );
+                  return (
+                    <span
+                      className="dd-invalid"
+                      style={{ left: p.x, top: p.y }}
+                    >
+                      ×
+                    </span>
+                  );
+                })()}
               <div
-                key={i}
-                className="dash-block"
-                style={{ left: `${b.x}%`, top: `${b.y}%` }}
+                className="dd-planned"
+                aria-label={
+                  lang === 'en' ? 'Stops on your route' : '路线中的目的地'
+                }
               >
-                ROAD CLOSED
-              </div>
-            ))}
-            {level === 2 && (
-              <div className={`dash-traffic ${trafficOpen ? 'open' : ''}`}>
-                {trafficOpen ? 'TRAFFIC CLEAR' : 'TRAFFIC'}
-              </div>
-            )}
-            {LEVELS[level].coffee && (
-              <div
-                className="dash-coffee"
-                style={{
-                  left: `${LEVELS[level].coffee!.x}%`,
-                  top: `${LEVELS[level].coffee!.y}%`,
-                }}
-              >
-                ☕
-              </div>
-            )}
-            {LEVELS[level].rain && (
-              <div className="dash-rain">
-                {Array.from({ length: reduced ? 8 : 24 }, (_, i) => (
-                  <i key={i} />
+                {game.config.targets.map((n, i) => (
+                  <span
+                    key={n}
+                    className={
+                      game.delivered.has(n)
+                        ? 'done'
+                        : game.route.includes(n)
+                          ? 'planned'
+                          : ''
+                    }
+                  >
+                    {game.delivered.has(n) ? '✓' : i + 1}
+                  </span>
                 ))}
               </div>
-            )}
-            {phase === 'tutorial' && (
-              <div className="dash-tutorial">
-                <div className="dash-ghost-line" />
-                <span>☝</span>
-                <p>{delivered.length ? t.nice : t.tutorial}</p>
-              </div>
-            )}
-            {phase === 'paused' && (
-              <div className="dash-pause">
-                <Pause />
-                <h3>PAUSED</h3>
-                <button onClick={() => setPhase('playing')}>
-                  {lang === 'en' ? 'Resume' : '继续'}
-                </button>
-              </div>
-            )}
-            {phase === 'level' && (
-              <div className="dash-level">
-                {t.level} {level + 1}
-              </div>
-            )}
-            <AnimatePresence>
-              {notice && (
+              {game.clock < game.noticeUntil &&
+                !(game.tutorial && game.notice === 'start') && (
+                  <motion.output
+                    key={game.notice}
+                    className={`dd-toast ${game.notice === 'perfect' || game.notice === 'express' ? 'gold' : ''}`}
+                    initial={reduced ? false : { opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                  >
+                    {notices[game.notice]}
+                  </motion.output>
+                )}
+              {game.combo > 1 && game.clock - game.lastDelivery < 1.7 && (
                 <motion.div
-                  className="dash-notice"
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  key={game.combo}
+                  initial={reduced ? false : { scale: 0.8 }}
+                  animate={{ scale: 1 }}
+                  className="dd-combo"
                 >
-                  {notice}
+                  {game.combo}
+                  <span>× {t.combo}</span>
                 </motion.div>
               )}
-            </AnimatePresence>
-            {combo > 1 && phase === 'driving' && (
-              <motion.div
-                className="dash-combo"
-                key={combo}
-                initial={{ scale: 0.5 }}
-                animate={{ scale: 1 }}
-              >
-                COMBO ×{combo}
-              </motion.div>
-            )}
-            {(phase === 'playing' || phase === 'tutorial') && (
-              <div className="dash-actions">
-                <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  onClick={() => setPath([])}
-                >
-                  {t.clear}
+              {game.expressActive && (
+                <div className="dd-express">
+                  ✦ {t.expressLive}
+                  <span>
+                    {Math.ceil((game.hard ? 11 : 15) - game.levelTime)}s
+                  </span>
+                </div>
+              )}
+              {game.phase === 'level' && (
+                <div className="dd-level-wash" aria-hidden="true" />
+              )}
+            </>
+          )}
+          {game.paused && playing && (
+            <div className="dd-overlay">
+              <Pause size={26} />
+              <h3>{t.paused}</h3>
+              <p>{t.pausedHint}</p>
+              <button className="dd-primary" onClick={pause}>
+                {t.resume}
+                <Play size={17} />
+              </button>
+            </div>
+          )}
+          {result && (
+            <section
+              className="dd-result dd-overlay"
+              aria-label={lang === 'en' ? 'Run results' : '游戏结算'}
+            >
+              <span className="dd-pretitle">{game.won ? t.won : t.ended}</span>
+              <h3>{t.titles[title]}</h3>
+              <strong className="dd-final-score">
+                {game.finalScore.toLocaleString()}
+                <small>{t.score}</small>
+              </strong>
+              <div className="dd-result-stats">
+                <div>
+                  <strong>{game.bestCombo}×</strong>
+                  <span>{t.best}</span>
+                </div>
+                <div>
+                  <strong>{game.efficiency}%</strong>
+                  <span>{t.efficiency}</span>
+                </div>
+                <div>
+                  <strong>{game.count}/14</strong>
+                  <span>{t.delivered}</span>
+                </div>
+              </div>
+              <p>
+                {game.won
+                  ? game.efficiency < 65
+                    ? t.scenic
+                    : t.explain
+                  : t.partial}
+              </p>
+              <div className="dd-result-actions">
+                <button className="dd-primary" onClick={() => start(false)}>
+                  {t.again}
+                  <RotateCcw size={17} />
                 </button>
+                <button className="dd-secondary" onClick={() => start(true)}>
+                  {t.hard}
+                </button>
+              </div>
+              <button className="dd-built-link" onClick={showCase}>
+                {t.built}
+                <ArrowUpRight size={17} />
+              </button>
+            </section>
+          )}
+        </div>
+        {playing && (
+          <div className="dd-toolbar">
+            <p>
+              {game.phase === 'driving'
+                ? game.boostUntil > game.clock
+                  ? t.coffee
+                  : game.notice === 'traffic' && game.clock < game.noticeUntil
+                    ? t.traffic
+                    : t.tag
+                : t.draw}
+            </p>
+            <div>
+              <button
+                disabled={game.route.length < 2 || game.phase !== 'drawing'}
+                onClick={() => {
+                  game.undo();
+                  refresh();
+                }}
+                aria-label={t.undo}
+              >
+                <Undo2 size={19} />
+              </button>
+              <button
+                onClick={() => setKeys((v) => !v)}
+                aria-label={t.keyboard}
+                aria-expanded={keys}
+              >
+                <Keyboard size={19} />
+              </button>
+              <button
+                onClick={pause}
+                aria-label={game.paused ? t.resume : t.pause}
+              >
+                {game.paused ? <Play size={18} /> : <Pause size={18} />}
+              </button>
+              <button onClick={() => start(game.hard)} aria-label={t.restart}>
+                <RotateCcw size={18} />
+              </button>
+              {keys && (
                 <button
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onPointerUp={(e) => e.stopPropagation()}
-                  disabled={path.length < 2}
-                  onClick={drive}
+                  className="dd-key-drive"
+                  disabled={game.route.length < 2}
+                  onClick={() => {
+                    game.release();
+                    refresh();
+                  }}
                 >
                   {t.drive}
                 </button>
-              </div>
-            )}
-            {phase === 'result' && (
-              <motion.div
-                className="dash-result"
-                initial={reduced ? false : { opacity: 0, scale: 0.96 }}
-                animate={{ opacity: 1, scale: 1 }}
-              >
-                <span>RUN COMPLETE</span>
-                <h3>{title}</h3>
-                <strong>{score.toLocaleString()}</strong>
-                <small>{t.score}</small>
-                <div>
-                  <b>
-                    {bestCombo}×<small>BEST COMBO</small>
-                  </b>
-                  <b>
-                    {efficiency}%<small>ROUTE EFFICIENCY</small>
-                  </b>
-                  <b>
-                    {completedCount}/{totalStops}
-                    <small>DELIVERIES</small>
-                  </b>
-                </div>
-                {efficiency < 55 && <p>{t.scenic}</p>}
-                <p>{t.explain}</p>
-                <nav>
-                  <button onClick={() => reset(false)}>{t.again}</button>
-                  <button onClick={() => reset(true)}>{t.hard}</button>
-                  <button onClick={onSeeProject}>{t.built}</button>
-                </nav>
-              </motion.div>
-            )}
+              )}
+            </div>
           </div>
-          <footer>
-            <span>{t.helper}</span>
-            <b>
-              {t.level} {level + 1}/3
-            </b>
-          </footer>
+        )}
+        {keys && playing && (
+          <p id="dd-key-help" className="dd-key-help">
+            {t.keys}
+          </p>
+        )}
+      </div>
+      <p className="dd-disclosure">{t.disclosure}</p>
+      {result && !details && (
+        <div className="dd-afterword">
+          <p>{t.explain}</p>
+          <div>
+            {t.notes.map((n) => (
+              <span key={n}>{n}</span>
+            ))}
+          </div>
         </div>
       )}
-      <div className="dash-notes">
-        <div>
-          <span>Interaction Design</span>
-          <p>One gesture becomes the entire game loop.</p>
-        </div>
-        <div>
-          <span>Path & Collision Logic</span>
-          <p>Sampling, smoothing, snapping and spatial detection.</p>
-        </div>
-        <div>
-          <span>Game State Management</span>
-          <p>Three levels, timed events, scoring and restarts.</p>
-        </div>
-        <div>
-          <span>Motion System</span>
-          <p>Vehicle travel, route flow, combos and city feedback.</p>
-        </div>
-        <div>
-          <span>Responsive Controls</span>
-          <p>Pointer, touch and keyboard route building.</p>
-        </div>
-      </div>
-      <p className="dash-disclosure">
-        Synthetic interactive experience inspired by real-world delivery
-        systems.
-      </p>
+      {details && (
+        <article
+          className="dd-case"
+          id="delivery-dash-case-study"
+          ref={caseStudy}
+          tabIndex={-1}
+        >
+          <span className="eyebrow">
+            DELIVERY DASH /{' '}
+            {lang === 'en' ? 'PERSONAL INTERACTIVE PROJECT' : '个人交互项目'}
+          </span>
+          <h3>{t.caseTitle}</h3>
+          <p>{t.caseIntro}</p>
+          <div className="dd-case-grid">
+            {[
+              [t.problem, t.problemBody],
+              [t.contribution, t.contributionBody],
+              [t.approach, t.approachBody],
+              [t.outcome, t.outcomeBody],
+            ].map(([h, b]) => (
+              <div key={h}>
+                <h4>{h}</h4>
+                <p>{b}</p>
+              </div>
+            ))}
+          </div>
+          <div className="dd-case-topics">
+            {t.notes.map((n, i) => (
+              <div key={n}>
+                <h4>{n}</h4>
+                <p>{t.details[i]}</p>
+              </div>
+            ))}
+          </div>
+          <p className="dd-tech">
+            React · TypeScript · React Three Fiber · Three.js · Motion · Canvas
+            2D
+          </p>
+          <button
+            className="dd-secondary"
+            onClick={() => {
+              setDetails(false);
+              board.current?.focus({ preventScroll: true });
+            }}
+          >
+            {t.closeCase}
+            <X size={16} />
+          </button>
+        </article>
+      )}
     </section>
   );
 }

@@ -14,7 +14,6 @@ import {
   LayoutGroup,
   MotionConfig,
   motion,
-  useReducedMotion,
   useScroll,
   useTransform,
 } from 'motion/react';
@@ -42,6 +41,7 @@ import {
 import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import DeliveryDash from './DeliveryDash';
+import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
 import { profile } from './content';
 const Scene = lazy(() => import('./SystemScene'));
 const spring = {
@@ -847,17 +847,7 @@ export default function Home() {
             </section>
           }
         >
-          <DeliveryDash
-            onSeeProject={() => {
-              setProject(0);
-              document.getElementById('work')?.scrollIntoView({
-                behavior: window.matchMedia('(prefers-reduced-motion: reduce)')
-                  .matches
-                  ? 'instant'
-                  : 'smooth',
-              });
-            }}
-          />
+          <DeliveryDash />
         </Suspense>
         <Explorer index={project} setIndex={setProject} />
         <Playground />
