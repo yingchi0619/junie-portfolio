@@ -46,7 +46,7 @@ import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import DeliveryDash from './DeliveryDash';
 import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
-import { profile } from './content';
+import { profile, miniweather } from './content';
 const Scene = lazy(() => import('./SystemScene'));
 const spring = {
   type: 'spring' as const,
@@ -395,18 +395,18 @@ function Explorer({
   const dragDistance = useRef(0);
   const explore = useRef<HTMLButtonElement>(null);
   const p = profile.projects[index];
-  const change = (d: number) => setIndex((index + d + 4) % 4);
+  const count = profile.projects.length;
+  const change = (d: number) => setIndex((index + d + count) % count);
   const projectRole = [
     'Analytics exploration',
-    'Frontend prototyping',
+    'Native UI & shared recommendation logic',
     'Backend development',
-    'Mini program development',
   ][index];
   return (
     <section id="work" className="work section">
       <div className="section-top">
         <span className="eyebrow">02 / PROJECT EXPLORER</span>
-        <span className="section-note">FOUR WAYS INTO THE WORK</span>
+        <span className="section-note">THREE WAYS INTO THE WORK</span>
       </div>
       <div className="work-heading">
         <h2>
@@ -457,8 +457,8 @@ function Explorer({
           onLostPointerCapture={() => setDragging(false)}
         >
           {profile.projects.map((project, i) => {
-            let offset = (i - index + 4) % 4;
-            if (offset === 3) offset = -1;
+            let offset = (i - index + count) % count;
+            if (offset > count / 2) offset -= count;
             return (
               <motion.div
                 key={project.id}
@@ -507,7 +507,7 @@ function Explorer({
             <button aria-label="Previous project" onClick={() => change(-1)}>
               <ArrowLeft size={18} />
             </button>
-            <span>0{index + 1} / 04</span>
+            <span>0{index + 1} / 0{count}</span>
             <button aria-label="Next project" onClick={() => change(1)}>
               <ArrowRight size={18} />
             </button>
@@ -526,19 +526,22 @@ function Explorer({
               {p.title}
             </motion.h3>
             <p>{p.intro}</p>
+            {p.id === 'miniweather' && <ul className="mw-highlights">{miniweather.highlights.map(h => <li key={h}>{h}</li>)}</ul>}
             <div className="tags">
               {p.stack.split(' · ').map((s) => (
                 <span key={s}>{s}</span>
               ))}
             </div>
           </div>
-          <button
+          <div className="project-actions"><button
             ref={explore}
             className="explore-button"
             onClick={() => setOpened(true)}
           >
-            Explore case study <MoveUpRight size={24} />
+            {p.id === 'miniweather' ? 'View Case Study' : 'Explore case study'} <MoveUpRight size={24} />
           </button>
+          {p.id === 'miniweather' && <><a className="mw-action" href={miniweather.demo}>Live Demo <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
+          </div>
         </div>
         <Dialog open={opened} onOpenChange={setOpened}>
           <DialogContent
@@ -603,6 +606,7 @@ function Explorer({
                   View GitHub repository <ArrowUpRight size={18} />
                 </a>
               )}
+              {p.id === 'miniweather' && <div className="mw-case-links"><a className="primary-button" href={miniweather.demo}>Live Demo <ArrowUpRight size={18} /></a><a className="mw-action" href={miniweather.caseStudy}>Read the full case study <ArrowUpRight size={18} /></a><p>Synthetic weather · Explainable rules · Browser screenshots. The linked repository may not yet include this latest local implementation.</p></div>}
             </div>
           </DialogContent>
         </Dialog>
@@ -783,6 +787,11 @@ export default function Home() {
   const [mode, setMode] = useState(0);
   const [project, setProject] = useState(0);
   const [section, setSection] = useState('home');
+  useEffect(() => {
+    const selected = new URLSearchParams(window.location.search).get('project');
+    const found = profile.projects.findIndex((item) => item.id === selected);
+    if (found >= 0) setProject(found);
+  }, []);
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) =>

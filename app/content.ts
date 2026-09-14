@@ -34,18 +34,18 @@ export const profile = {
     {
       id: 'miniweather',
       title: 'MiniWeather',
-      type: 'AI-assisted product prototype',
-      stack: 'JavaScript · Weather API · DeepSeek API · Image generation',
+      type: 'WeChat Mini Program · Product Engineering',
+      stack: 'JavaScript · WXML / WXSS · Rule engine · Weather adapter',
       intro:
-        'A weather-and-outfit experience that turns local conditions and personal preferences into a visual daily recommendation.',
+        'Weather-powered personal styling assistant.',
       problem:
-        'Weather data alone does not answer the practical question: what should I wear today? MiniWeather combines local conditions with the user’s style and comfort preferences.',
+        'A forecast does not tell you what to wear. Temperature swings, rain and personal comfort preferences need to become practical, understandable outfit choices.',
       contribution:
-        'Designed the end-to-end interaction across onboarding, weather, outfit and profile screens, including the inputs and response states for an AI-generated outfit recommendation.',
+        'Built Today, Forecast, Style, Profile, onboarding, city selection and outfit detail flows. A native WeChat interface and accessible browser preview share the same weather-aware outfit engine, personal style preferences and formatting logic.',
       approach:
-        'Call a weather API with the user’s city, then combine the returned daily temperature with the saved outfit-preference description and the style selected on the OOTD page. Send that context to APIs powered by the open-source DeepSeek model to generate recommendation copy and an outfit preview image.',
+        'Use deterministic rules to combine apparent temperature, hourly and weekly forecasts, rain, wind and personal sensitivity. Separate weather access, preference persistence and presentation. The responsive mini-program UI includes recovery for denied location, unavailable weather, malformed storage and empty collections.',
       outcome:
-        'A browsable mobile-oriented prototype that demonstrates the complete product flow. The local version currently shows sample weather and UI states because its backend APIs are not connected; it should not be read as a live weather service or deployed recommendation engine.',
+        'A working browser demo with explicitly labeled synthetic weather and explainable rule-based recommendations, not connected AI. The project reports 18 Node/native-logic tests and 12 browser tests passing. A weather adapter exists, but the live backend, WeChat DevTools compilation and physical-device validation remain outstanding. Screenshots show the browser preview.',
       url: 'https://github.com/yingchi0619/miniweather',
     },
     {
@@ -63,19 +63,12 @@ export const profile = {
         'Demonstrates a backend project focus. No traffic, revenue or production reliability metrics are claimed.',
       url: '',
     },
-    {
-      id: 'ootd',
-      title: 'OOTD',
-      type: 'Mini program project',
-      stack: 'WeChat mini program',
-      intro: 'A project within the WeChat mini program ecosystem.',
-      problem: 'The WeChat mini program environment is the context for OOTD.',
-      contribution: 'Project work on the OOTD WeChat mini program.',
-      approach:
-        'A mini program implementation. Detailed functionality and individual implementation scope will be added with supporting project materials.',
-      outcome:
-        'Included as mini program project experience; no user growth or launch results are claimed.',
-      url: '',
-    },
   ],
+};
+
+export const miniweather = {
+  demo: '/projects/miniweather/miniweather/prototype/index.html',
+  caseStudy: '/projects/miniweather/docs/case-study.html',
+  screenshotBase: '/projects/miniweather/docs/screenshots/',
+  highlights: ['Weather-aware outfit engine', 'Personal style preferences', 'Hourly & weekly forecasts', 'Responsive mini-program UI'],
 };

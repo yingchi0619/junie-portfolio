@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MiniWeather — Product Engineering Case Study</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: #f4f5ed;
+        color: #30382e;
+        font:
+          16px/1.7 Arial,
+          Helvetica,
+          sans-serif;
+      }
+      main {
+        max-width: 1080px;
+        margin: auto;
+        padding: 40px 32px;
+      }
+      a {
+        color: #51683e;
+      }
+      nav {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        align-items: center;
+        font-size: 13px;
+      }
+      .brand {
+        font:
+          26px Georgia,
+          serif;
+        color: #30382e;
+        text-decoration: none;
+      }
+      header {
+        max-width: 800px;
+        padding: 90px 0 50px;
+      }
+      h1 {
+        font-size: clamp(48px, 7vw, 88px);
+        font-weight: 400;
+        letter-spacing: -4px;
+        line-height: 1.05;
+        margin: 18px 0 30px;
+      }
+      em {
+        font-family: Georgia, serif;
+        color: #75855e;
+        font-weight: 400;
+      }
+      h2 {
+        font-size: 30px;
+        letter-spacing: -1px;
+        font-weight: 400;
+      }
+      h3 {
+        font-size: 18px;
+        font-weight: 500;
+      }
+      p {
+        color: #6b7661;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 2px;
+      }
+      .lead {
+        font-size: 20px;
+        max-width: 650px;
+      }
+      .buttons {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 30px;
+      }
+      .button {
+        padding: 12px 21px;
+        background: #4b5a3e;
+        color: white;
+        border-radius: 9px;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .hero-image {
+        width: 100%;
+        border-radius: 20px;
+        border: 1px solid #dce0d2;
+      }
+      .split {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 70px;
+        border-top: 1px solid #dce0d2;
+        padding: 40px 0;
+        margin-top: 45px;
+      }
+      .flow {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: center;
+        padding: 30px;
+        background: #e8eddd;
+        border-radius: 12px;
+        font-size: 14px;
+        margin: 20px 0 60px;
+      }
+      .phones {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 28px;
+        margin: 28px 0 70px;
+      }
+      .phones img {
+        width: 100%;
+        border: 1px solid #dce0d2;
+        border-radius: 30px;
+      }
+      .phones figure {
+        margin: 0;
+      }
+      .phones figcaption {
+        font-size: 12px;
+        color: #6b7661;
+        margin-top: 14px;
+      }
+      .number {
+        font-size: 12px;
+        letter-spacing: 2px;
+        color: #8a9875;
+      }
+      li {
+        margin: 14px 0;
+        color: #6b7661;
+      }
+      footer {
+        border-top: 1px solid #dce0d2;
+        padding: 35px 0;
+        color: #7d8775;
+        font-size: 12px;
+      }
+      code {
+        font-size: 13px;
+        color: #3b5230;
+      }
+      a:focus-visible {
+        outline: 2px solid #536b40;
+        outline-offset: 5px;
+      }
+      @media (max-width: 650px) {
+        main {
+          padding: 25px 20px;
+        }
+        header {
+          padding-top: 50px;
+        }
+        .split {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+        .phones {
+          gap: 10px;
+        }
+        .phones img {
+          border-radius: 15px;
+        }
+        .flow {
+          flex-direction: column;
+          align-items: start;
+        }
+        h1 {
+          letter-spacing: -2px;
+        }
+        nav {
+          align-items: start;
+        }
+      }
+    </style>
+    <link rel="stylesheet" href="../portfolio.css" />
+  </head>
+  <body class="portfolio-case">
+    <div class="portfolio-return"><a href="/?project=miniweather#work">← Back to Junie’s portfolio</a><span>MiniWeather / Case study</span><a href="../miniweather/prototype/index.html">Live Demo ↗</a></div>
+    <main>
+      <nav>
+        <a class="brand" href="../miniweather/prototype/index.html">m° MiniWeather</a
+        ><a href="https://github.com/yingchi0619/miniweather">View repository ↗</a>
+      </nav>
+      <header>
+        <p class="eyebrow">WECHAT MINI PROGRAM · PRODUCT ENGINEERING</p>
+        <h1>Dress for the weather.<br /><em>Feel like yourself.</em></h1>
+        <p class="lead">
+          MiniWeather turns a forecast into a thoughtful daily outfit, guided by personal style and
+          how you experience temperature.
+        </p>
+        <div class="buttons">
+          <a class="button" href="../miniweather/prototype/index.html">Try the interactive demo ↗</a
+          ><span class="eyebrow">NO ACCOUNT. NO API KEY.</span>
+        </div>
+      </header>
+      <p class="preview-note">This interactive browser demo uses fixed synthetic weather and explainable rules, not connected AI. A live weather backend and WeChat DevTools / physical-device validation remain outstanding. All screenshots below are from the browser preview.</p>
+      <img
+        class="hero-image"
+        src="screenshots/preview-desktop.png"
+        alt="MiniWeather's working browser preview with current weather and an outfit"
+      />
+      <section class="split">
+        <div>
+          <span class="number">01 / THE PROBLEM</span>
+          <h2>A temperature isn't<br />a decision.</h2>
+          <p>
+            Weather apps tell us what the weather is. We still have to interpret what that means for
+            our day—and our clothes. A warm afternoon can hide a cold morning. And 65° feels
+            different to everyone.
+          </p>
+        </div>
+        <div>
+          <span class="number">02 / THE RESPONSE</span>
+          <h2>Weather, with a<br />personal point of view.</h2>
+          <p>
+            The product interprets the next twelve hours, combines them with style preferences and
+            temperature sensitivity, and recommends pieces with clear reasons. Users can try another
+            look or keep one they love.
+          </p>
+        </div>
+      </section>
+      <div class="flow">
+        <span>Weather data</span><span>→</span><span>Context interpretation</span><span>→</span
+        ><span>Personal preference</span><span>→</span><strong>Outfit recommendation</strong>
+      </div>
+      <span class="number">03 / THE EXPERIENCE</span>
+      <h2>One small routine.<br /><em>One less decision.</em></h2>
+      <div class="phones">
+        <figure>
+          <img src="screenshots/01-today.png" alt="Today weather and outfit" />
+          <figcaption>01 · Weather becomes an outfit.</figcaption>
+        </figure>
+        <figure>
+          <img
+            src="screenshots/02-forecast.png"
+            alt="Hourly temperature curve and weekly weather"
+          />
+          <figcaption>02 · Plan around the changes.</figcaption>
+        </figure>
+        <figure>
+          <img src="screenshots/04-style.png" alt="Personal styling preferences" />
+          <figcaption>03 · Make the experience yours.</figcaption>
+        </figure>
+      </div>
+      <section class="split">
+        <div>
+          <span class="number">04 / ENGINEERING</span>
+          <h2>Two interfaces.<br />One source of logic.</h2>
+          <p>
+            The native WeChat interface and browser preview share a pure JavaScript engine,
+            preference schema, weather fixtures and formatting utilities. The native app uses
+            reusable WXML components; browser views consume a generated core bundle.
+          </p>
+          <p>
+            A validated weather-service boundary separates future provider access from the rule
+            engine. Current fixtures are visibly marked as demo data.
+          </p>
+        </div>
+        <div>
+          <h3>Rules you can explain</h3>
+          <ul>
+            <li>Apparent temperature and personal sensitivity establish insulation.</li>
+            <li>
+              Rain, wind and forecast swings override aesthetic choices when protection matters.
+            </li>
+            <li>Humidity, UV and time of day add fabric and accessory advice.</li>
+            <li>Variant selection is reproducible, and saved looks have stable identities.</li>
+          </ul>
+        </div>
+      </section>
+      <section class="split">
+        <div>
+          <span class="number">05 / QUALITY & LIMITATIONS</span>
+          <h2>Designed beyond<br />the happy path.</h2>
+          <p>
+            Recovery covers denied location, unavailable weather, malformed preferences, storage
+            quota errors and empty collections. Browser checks exercise the full journey across four
+            mobile viewport sizes.
+          </p>
+          <p>
+            The screenshots are from the working web preview. Native DevTools compilation and
+            real-device acceptance remain outstanding; no live weather backend or public release is
+            claimed for the native mini program.
+          </p>
+        </div>
+        <div>
+          <h3>What comes next</h3>
+          <ol>
+            <li>Connect a production weather backend and broader geocoding.</li>
+            <li>Complete native iOS and Android acceptance.</li>
+            <li>Expand the garment catalog, illustrations and feedback-based evaluation.</li>
+          </ol>
+          <a class="button" href="../miniweather/prototype/index.html">Make it your day ↗</a>
+        </div>
+      </section>
+      <footer>
+        MiniWeather · Weather-powered personal styling assistant. Original product preview preserved
+        in the repository. The GitHub repository may not yet contain the latest local implementation shown here.
+      </footer>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+/* Integration frame only. Product styling and behavior remain in the bundled demo. */
+.portfolio-return{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px max(20px,calc((100vw - 1200px)/2));background:#f7f3e9;border-bottom:1px solid #d4cab6;color:#443e35;font:14px/1.5 'Avenir Next','Segoe UI',Arial,sans-serif;position:relative;z-index:20}
+.portfolio-return a{color:#526247;text-decoration:none;padding:5px 0}
+.portfolio-return a:hover{text-decoration:underline}
+.portfolio-return a:focus-visible{outline:2px solid #667457;outline-offset:4px}
+.portfolio-return span{font-size:12px;color:#736957}
+.portfolio-case{background:#f7f3e9;color:#443e35;font-family:'Avenir Next','Segoe UI',Arial,sans-serif}
+.portfolio-case h1,.portfolio-case h2,.portfolio-case .brand{font-family:'Palatino Linotype',Palatino,Georgia,serif;color:#443e35}
+.portfolio-case p,.portfolio-case li,.portfolio-case figcaption{color:#736957}
+.portfolio-case em,.portfolio-case a{color:#667457}
+.portfolio-case .button{background:#667457;color:#fffaf0;border-radius:3px;box-shadow:0 3px 0 #4b563f}
+.portfolio-case .hero-image{border-radius:5px;border-color:#d4cab6}
+.portfolio-case .flow{background:#e0e5d5;border-radius:4px}
+.portfolio-case .phones img{border-radius:6px;border-color:#d4cab6}
+.portfolio-case .preview-note{padding:15px 20px;border:1px solid #d4cab6;background:#ece5d6;font-size:14px}
+@media(max-width:600px){.portfolio-return{padding:10px 16px;gap:12px}.portfolio-return span{display:none}.portfolio-case .phones{grid-template-columns:1fr;max-width:310px;margin-inline:auto}.portfolio-case .phones figcaption{font-size:14px;margin-bottom:24px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

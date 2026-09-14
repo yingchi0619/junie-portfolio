@@ -1,5 +1,19 @@
 'use client';
+import { miniweather } from './content';
 export default function ProjectPreview({ id }: { id: string }) {
+  if (id === 'miniweather') return (
+    <div className="preview mw-preview" aria-label="MiniWeather actual browser preview screenshots">
+      <div className="preview-chrome"><span><i /><i /><i /></span><span>MINIWEATHER / PRODUCT ENGINEERING</span><span>↗</span></div>
+      <div className="mw-preview-screens">
+        {[
+          ['01-today.png', 'Today: sample weather and a recommended outfit'],
+          ['02-forecast.png', 'Forecast: hourly and weekly synthetic weather'],
+          ['04-style.png', 'Style: personal clothing preferences'],
+        ].map(([file, alt]) => <img key={file} src={miniweather.screenshotBase + file} alt={alt} loading="lazy" draggable={false} />)}
+      </div>
+      <div className="preview-disclaimer">Actual browser preview · Synthetic weather · Rule-based recommendations</div>
+    </div>
+  );
   return (
     <div
       className={`preview preview-${id}`}
