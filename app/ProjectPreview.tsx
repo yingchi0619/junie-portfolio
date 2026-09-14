@@ -1,6 +1,7 @@
 'use client';
-import { miniweather } from './content';
+import { miniweather, groundDsp } from './content';
 export default function ProjectPreview({ id }: { id: string }) {
+  if (id === 'ground-dsp') return <div className="preview ground-preview" aria-label="GROUND DSP recruitment website screenshot"><div className="preview-chrome"><span><i /><i /><i /></span><span>GROUND / DSP PARTNER RECRUITMENT</span><span>↗</span></div><img className="ground-preview-image" src={groundDsp.screenshot} alt="GROUND DSP recruitment website showing its service-area map and partner recruitment introduction" loading="lazy" draggable={false} /><div className="preview-disclaimer">Live website screenshot · Application API & email notifications</div></div>;
   if (id === 'miniweather') return (
     <div className="preview mw-preview" aria-label="MiniWeather actual browser preview screenshots">
       <div className="preview-chrome"><span><i /><i /><i /></span><span>MINIWEATHER / PRODUCT ENGINEERING</span><span>↗</span></div>

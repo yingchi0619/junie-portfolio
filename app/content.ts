@@ -63,6 +63,18 @@ export const profile = {
         'Demonstrates a backend project focus. No traffic, revenue or production reliability metrics are claimed.',
       url: '',
     },
+    {
+      id: 'ground-dsp',
+      title: 'GROUND DSP Partner Recruitment',
+      type: 'DSP Recruitment · Full-stack Web Development',
+      stack: 'HTML / CSS · JavaScript · Python · SQLite · Resend API',
+      intro: 'A live recruitment website connecting delivery service partners with the operations team.',
+      problem: 'Prospective Delivery Service Partners (DSPs) need a clear way to explore service areas and apply. The operations team needs structured applications and timely notification when a partner expresses interest.',
+      contribution: 'Built the DSP recruitment website with an interactive station map, a multilingual application form and an API-backed submission flow. Connected email notifications so new applications are sent to me for follow-up.',
+      approach: 'The JavaScript form sends application details to a Python API. The server checks required fields, saves the application in SQLite and calls the Resend email API to notify the recruitment contact. The interface handles submission progress, success and failure states.',
+      outcome: 'A publicly accessible recruitment site with a working application workflow and email notification integration. This project connects frontend interaction, backend data handling and my experience with DSP onboarding. No recruitment-volume or conversion metrics are claimed.',
+      url: 'https://github.com/yingchi0619/GROUND_DSP_WEBSITE',
+    },
   ],
 };
 
@@ -71,4 +83,9 @@ export const miniweather = {
   caseStudy: '/projects/miniweather/docs/case-study.html',
   screenshotBase: '/projects/miniweather/docs/screenshots/',
   highlights: ['Weather-aware outfit engine', 'Personal style preferences', 'Hourly & weekly forecasts', 'Responsive mini-program UI'],
+};
+
+export const groundDsp = {
+  live: 'https://ground-dsp-website.onrender.com/',
+  screenshot: '/projects/ground-dsp/website.png',
 };

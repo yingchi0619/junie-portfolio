@@ -46,7 +46,7 @@ import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import DeliveryDash from './DeliveryDash';
 import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
-import { profile, miniweather } from './content';
+import { profile, miniweather, groundDsp } from './content';
 const Scene = lazy(() => import('./SystemScene'));
 const spring = {
   type: 'spring' as const,
@@ -73,8 +73,8 @@ const modes = [
     title: 'Operate',
     heading: 'Understand what happens on the ground.',
     text: 'Hands-on last-mile capacity operations: DSP onboarding, cross-station coordination, route balance, billing and exceptions.',
-    project: 0,
-    label: 'Root Cause & Capacity Dashboard',
+    project: 3,
+    label: 'GROUND DSP Partner Recruitment',
   },
 ];
 class SceneBoundary extends Component<
@@ -401,12 +401,13 @@ function Explorer({
     'Analytics exploration',
     'Native UI & shared recommendation logic',
     'Backend development',
+    'Application flow & email integration',
   ][index];
   return (
     <section id="work" className="work section">
       <div className="section-top">
         <span className="eyebrow">02 / PROJECT EXPLORER</span>
-        <span className="section-note">THREE WAYS INTO THE WORK</span>
+        <span className="section-note">FOUR WAYS INTO THE WORK</span>
       </div>
       <div className="work-heading">
         <h2>
@@ -541,6 +542,7 @@ function Explorer({
             {p.id === 'miniweather' ? 'View Case Study' : 'Explore case study'} <MoveUpRight size={24} />
           </button>
           {p.id === 'miniweather' && <><a className="mw-action" href={miniweather.demo}>Live Demo <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
+          {p.id === 'ground-dsp' && <><a className="mw-action" href={groundDsp.live}>Become a DSP <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
           </div>
         </div>
         <Dialog open={opened} onOpenChange={setOpened}>
@@ -606,6 +608,7 @@ function Explorer({
                   View GitHub repository <ArrowUpRight size={18} />
                 </a>
               )}
+              {p.id === 'ground-dsp' && <div className="ground-dsp-invite"><div><h3>Interested in becoming our DSP?</h3><p>Explore available service areas and submit your application on our partner recruitment website.</p></div><a className="primary-button" href={groundDsp.live}>Become a DSP <ArrowUpRight size={18} /></a></div>}
               {p.id === 'miniweather' && <div className="mw-case-links"><a className="primary-button" href={miniweather.demo}>Live Demo <ArrowUpRight size={18} /></a><a className="mw-action" href={miniweather.caseStudy}>Read the full case study <ArrowUpRight size={18} /></a><p>Synthetic weather · Explainable rules · Browser screenshots. The linked repository may not yet include this latest local implementation.</p></div>}
             </div>
           </DialogContent>
@@ -631,8 +634,8 @@ const journeys = [
       'Exception analysis',
       'Process improvement',
     ],
-    project: 0,
-    projectLabel: 'Related personal exploration: Root Cause & Capacity',
+    project: 3,
+    projectLabel: 'Related project: GROUND DSP Partner Recruitment',
   },
   {
     id: 'nyu',
