@@ -182,8 +182,8 @@ export default function Playground() {
           >
             <defs>
               <linearGradient id="route-shade">
-                <stop stopColor="#47677c" />
-                <stop offset="1" stopColor="#b6dfff" />
+                <stop stopColor="#c7bba2" />
+                <stop offset="1" stopColor="#667457" />
               </linearGradient>
             </defs>
             {[60, 112, 165].map((y, i) => (
@@ -202,7 +202,7 @@ export default function Playground() {
                   }}
                   d={`M85 112 C180 112 180 ${y} 275 ${y} S380 112 455 112`}
                   fill="none"
-                  stroke="#d4efff"
+                  stroke="#667457"
                   strokeWidth={congested ? 4 : 3}
                   strokeDasharray={congested ? '2 8 2 8 2 180' : '5 200'}
                 />
@@ -212,11 +212,11 @@ export default function Playground() {
                   r={congested ? 15 : 9}
                   className="ops-hub"
                 />
-                <circle cx="275" cy={y} r="3" fill="#d7efff" />
+                <circle cx="275" cy={y} r="3" fill="#667457" />
               </g>
             ))}
-            <circle cx="85" cy="112" r="30" fill="#19262e" stroke="#577587" />
-            <circle cx="455" cy="112" r="30" fill="#19262e" stroke="#9bbcd0" />
+            <circle cx="85" cy="112" r="30" fill="#c7bba2" stroke="#c7bba2" />
+            <circle cx="455" cy="112" r="30" fill="#c7bba2" stroke="#667457" />
             <text x="85" y="117" textAnchor="middle">
               IN
             </text>

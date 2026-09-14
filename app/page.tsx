@@ -23,6 +23,10 @@ import {
   ArrowRight,
   ArrowUpRight,
   MoveUpRight,
+  Sprout,
+  Code2,
+  NotebookPen,
+  Package,
   X,
 } from 'lucide-react';
 import {
@@ -94,26 +98,8 @@ function Fallback({
 }) {
   return (
     <div className="scene-fallback">
-      <svg viewBox="0 0 500 360" aria-label="System connections">
-        <g fill="none" stroke="#7fabc6">
-          <ellipse
-            cx="250"
-            cy="180"
-            rx="130"
-            ry="60"
-            transform="rotate(-35 250 180)"
-          />
-          <ellipse
-            cx="250"
-            cy="180"
-            rx="130"
-            ry="60"
-            transform="rotate(35 250 180)"
-          />
-          <path d="M250 105L315 150V225L250 260L185 225V150Z M250 180L315 150 M250 180L185 150 M250 180V260" />
-          <path d="M110 95L185 150M390 100L315 150M250 260V315" />
-        </g>
-      </svg>
+      <NotebookPen size={48} strokeWidth={1} />
+      <h3>A little space for big questions.</h3>
       <div>
         {modes.map((m, i) => (
           <button
@@ -125,7 +111,7 @@ function Fallback({
           </button>
         ))}
       </div>
-      <p>System overview · interactive 2D fallback</p>
+      <p>Choose a field note to explore my work.</p>
     </div>
   );
 }
@@ -183,9 +169,9 @@ function Hero({
     target: area,
     offset: ['start start', 'end start'],
   });
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.72]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, 105]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, -8]);
+  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
+  const y = useTransform(scrollYProgress, [0, 1], [0, 20]);
+  const rotate = useTransform(scrollYProgress, [0, 1], [0, -1]);
   useEffect(() => {
     const mq = window.matchMedia('(max-width:700px)');
     const resize = () => setCompact(mq.matches);
@@ -242,13 +228,17 @@ function Hero({
       <div className="hero-grid">
         <div className="hero-copy">
           <div className="edition">
-            <span /> A PORTFOLIO OF CONNECTED THINKING
+            <Sprout size={18} strokeWidth={1.4} /> A LITTLE CORNER OF THE
+            INTERNET
           </div>
           <h1>
-            Systems
+            Hello, I’m
             <br />
-            in <em>motion.</em>
+            <em>Junie.</em>
           </h1>
+          <div className="hero-profession">
+            Software Engineer <span>with an operations perspective.</span>
+          </div>
           <p className="hero-description">
             I connect software engineering and data analytics with the
             real-world complexity of last-mile logistics.
@@ -302,16 +292,14 @@ function Hero({
             }
           }}
         >
-          <div className="scene-aura" />
-          <div className="scene-cross cross-a">+</div>
-          <div className="scene-cross cross-b">+</div>
+          <span className="desk-note">Ideas grow here.</span>
           {failed ? (
             fallback
           ) : ready ? (
             <SceneBoundary fallback={fallback}>
               <Suspense
                 fallback={
-                  <div className="scene-loading">Assembling the system…</div>
+                  <div className="scene-loading">Opening the workspace…</div>
                 }
               >
                 <Scene
@@ -326,16 +314,16 @@ function Hero({
               </Suspense>
             </SceneBoundary>
           ) : (
-            <div className="scene-loading">Preparing the system…</div>
+            <div className="scene-loading">Opening the workspace…</div>
           )}
           <div className="scene-caption">
-            <span>FIG. 01 / CONNECTED SYSTEM</span>
+            <span>01 / AT MY DESK</span>
             <span>
               {reduced
-                ? 'SELECT A NODE TO EXPLORE'
+                ? 'CHOOSE AN OBJECT TO EXPLORE'
                 : dragging
                   ? 'ROTATING / RELEASE TO RECENTER'
-                  : 'DRAG TO ROTATE · SELECT A NODE'}
+                  : 'DRAG TO LOOK AROUND · CHOOSE AN OBJECT'}
             </span>
           </div>
         </motion.div>
@@ -348,7 +336,15 @@ function Hero({
               onClick={() => onMode(i)}
               aria-pressed={mode === i}
             >
-              <span>0{i + 1}</span>
+              <span>
+                {i === 0 ? (
+                  <Code2 size={18} />
+                ) : i === 1 ? (
+                  <NotebookPen size={18} />
+                ) : (
+                  <Package size={18} />
+                )}
+              </span>
               {m.title}
               {mode === i && <motion.i layoutId="mode-line" />}
             </button>
@@ -471,7 +467,8 @@ function Explorer({
                 aria-hidden={offset !== 0}
                 animate={{
                   x: `${offset * 77}%`,
-                  rotateY: offset === 0 ? 0 : offset < 0 ? 25 : -25,
+                  rotateY: offset === 0 ? 0 : offset < 0 ? 8 : -8,
+                  rotateZ: offset === 0 ? -1 : offset < 0 ? -5 : 5,
                   scale: offset === 0 ? 1 : 0.82,
                   z: offset === 0 ? 0 : -120,
                   opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.42,

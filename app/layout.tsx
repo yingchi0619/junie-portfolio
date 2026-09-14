@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import './cozy-ui.css';
 export const metadata: Metadata = {
   metadataBase: new URL('https://junie-zhu-portfolio.nayukiki.chatgpt.site'),
   title: 'Junie Zhu | Systems in Motion — Engineering, Data & Operations',

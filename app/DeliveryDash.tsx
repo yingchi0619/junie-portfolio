@@ -132,6 +132,13 @@ export default function DeliveryDash() {
   }, []);
   useEffect(() => {
     if (!near) return;
+    // Renderer initialization can fail before React's scene boundary mounts.
+    // Probe first so devices without WebGL can immediately play the Canvas version.
+    try {
+      const probe = document.createElement('canvas').getContext('webgl2');
+      if (!probe) { onFail(); return; }
+      probe.getExtension('WEBGL_lose_context')?.loseContext();
+    } catch { onFail(); return; }
     let alive = true;
     import('./DeliveryDashScene')
       .then((m) => {
@@ -407,7 +414,7 @@ export default function DeliveryDash() {
             >
               {lang === 'en' ? 'EN / 中文' : '中文 / EN'}
             </button>
-            <button
+            {Scene && <button
               className="dd-view-switch"
               onClick={() => {
                 modeRef.current = modeRef.current === '3d' ? '2d' : '3d';
@@ -416,7 +423,7 @@ export default function DeliveryDash() {
               }}
             >
               {mode === '3d' ? t.twoD : t.threeD}
-            </button>
+            </button>}
             <button
               onClick={toggleSound}
               aria-label={sound ? t.soundOff : t.soundOn}

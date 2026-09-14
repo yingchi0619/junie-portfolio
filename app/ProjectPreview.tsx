@@ -58,13 +58,13 @@ export default function ProjectPreview({ id }: { id: string }) {
                 <path
                   d="M0 80 L45 66 L90 77 L135 34 L180 48 L225 20 L270 42 L315 16 L360 27 L420 5"
                   fill="none"
-                  stroke="#b6dfff"
+                  stroke="#667457"
                   strokeWidth="2"
                 />
                 <path
                   d="M0 95 L45 85 L90 87 L135 65 L180 80 L225 58 L270 65 L315 40 L360 45 L420 30"
                   fill="none"
-                  stroke="#5d727e"
+                  stroke="#c7bba2"
                   strokeWidth="1"
                 />
               </svg>

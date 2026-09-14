@@ -1,8 +1,8 @@
 .delivery-dash {
   max-width: none;
   padding: 74px 5% 62px;
-  background: #e9ebe7;
-  color: #152a36;
+  background: var(--paper);
+  color: var(--ink);
 }
 .dd-section-label {
   max-width: 1440px;
@@ -11,7 +11,7 @@
   justify-content: space-between;
   gap: 20px;
   font: 12px/1.5 monospace;
-  color: #5d717a;
+  color: var(--ink-soft);
   letter-spacing: 0.09em;
 }
 .dd-shell {
@@ -24,10 +24,10 @@
   flex-direction: column;
   border-radius: 14px;
   overflow: hidden;
-  background: #091620;
-  border: 1px solid #344c58;
-  color: #e5f0f2;
-  box-shadow: 0 28px 70px #10283230;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  box-shadow: 0 28px 70px color-mix(in srgb, var(--ink) 14%, transparent);
   isolation: isolate;
 }
 .dd-preview {
@@ -42,8 +42,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  border-bottom: 1px solid #aacfe414;
-  background: #0b1923;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
   position: relative;
   z-index: 3;
 }
@@ -54,15 +54,15 @@
   font-size: 19px;
   letter-spacing: -0.04em;
   text-decoration: none;
-  color: #eff5f6;
+  color: var(--ink);
 }
 .dd-wordmark span {
   font-style: italic;
-  color: #b9e5f6;
+  color: var(--ink);
 }
 .dd-wordmark i {
   margin-left: 9px;
-  color: #b9e5f6;
+  color: var(--ink);
   font-size: 16px;
 }
 .dd-top-actions {
@@ -73,7 +73,7 @@
 .dd-top-actions button {
   min-width: 40px;
   min-height: 40px;
-  color: #b9ced6;
+  color: var(--ink);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,8 +84,8 @@
   background: transparent;
 }
 .dd-top-actions button:hover {
-  background: #a5d7f011;
-  color: #edf8ff;
+  background: var(--sage-soft);
+  color: var(--ink);
 }
 .dd-hud {
   display: grid;
@@ -96,16 +96,16 @@
   position: absolute;
   top: 78px;
   pointer-events: none;
-  background: #0a1925bb;
-  backdrop-filter: blur(9px);
-  border: 1px solid #accce41a;
+  background: var(--paper);
+  backdrop-filter: none;
+  border: 1px solid var(--rule);
   border-radius: 9px;
   padding: 12px 6px;
 }
 .dd-hud > div {
   position: relative;
   text-align: center;
-  border-right: 1px solid #b4deed20;
+  border-right: 1px solid var(--rule);
 }
 .dd-hud > div:last-child {
   border: 0;
@@ -113,16 +113,16 @@
 .dd-hud span {
   display: block;
   font-size: 12px;
-  color: #9eb9c6;
+  color: var(--ink-soft);
   margin-bottom: 3px;
 }
 .dd-hud strong {
   font: 500 25px/1.1 monospace;
-  color: #e7f3f6;
+  color: var(--ink);
 }
 .dd-hud i {
   height: 2px;
-  background: #abdff3;
+  background: var(--sage-soft);
   position: absolute;
   left: 0;
   bottom: -7px;
@@ -130,10 +130,10 @@
   max-width: 100%;
 }
 .dd-hud .dd-warn i {
-  background: #e49b7e;
+  background: var(--linen);
 }
 .dd-hud .dd-warn strong {
-  color: #f0c598;
+  color: var(--clay);
 }
 .dd-board {
   position: relative;
@@ -145,7 +145,7 @@
   cursor: crosshair;
 }
 .dd-board:focus-visible {
-  box-shadow: inset 0 0 0 2px #b9e9ff;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 14%, transparent);
 }
 .dd-board > div:first-child:not(.dd-intro) {
   height: 100%;
@@ -170,16 +170,16 @@
   justify-content: center;
   gap: 12px;
   font-size: 14px;
-  background: #091620;
-  color: #bad9e4;
+  background: var(--paper);
+  color: var(--ink);
   z-index: 1;
 }
 .dd-loading span {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid #b4ddef33;
-  border-top-color: #b4ddef;
+  border: 1px solid var(--rule);
+  border-top-color: var(--sage);
   animation: dd-spin 1.4s linear infinite;
 }
 .dd-preview .dd-board {
@@ -203,12 +203,17 @@
   justify-content: center;
   z-index: 2;
   pointer-events: none;
-  background: linear-gradient(90deg, #091620 12%, #091620db 28%, #09162000 66%);
+  background: linear-gradient(
+    90deg,
+    var(--paper) 12%,
+    var(--paper) 28%,
+    var(--paper) 66%
+  );
 }
 .dd-pretitle {
   font: 12px/1.5 monospace;
   letter-spacing: 0.12em;
-  color: #89b3c4;
+  color: var(--ink-soft);
 }
 .dd-intro h2 {
   font-weight: 400;
@@ -216,23 +221,23 @@
   line-height: 0.93;
   letter-spacing: -0.065em;
   margin: 25px 0 18px !important;
-  color: #f0f5f4;
+  color: var(--ink);
 }
 .dd-intro h2 em {
-  color: #bbe4f5;
+  color: var(--ink);
   font-weight: 300;
 }
 .dd-intro .dd-tagline {
   font-size: 20px;
   font-weight: 500;
-  color: #f1d3aa;
+  color: var(--clay);
   letter-spacing: 0;
   line-height: 1.3;
   margin: 0 0 9px;
 }
 .dd-intro p {
   font-size: 15px;
-  color: #adc4ce;
+  color: var(--ink);
   line-height: 1.5;
   margin: 0 0 25px;
   max-width: 300px;
@@ -251,13 +256,13 @@
   transition:
     background 0.2s,
     transform 0.2s;
-  color: #0d2430;
-  background: #c2eaff;
-  border: 1px solid #c2eaff;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--sage);
   pointer-events: auto;
 }
 .dd-primary:hover {
-  background: #e2f4ff;
+  background: var(--paper);
   transform: translateY(-1px);
 }
 .dd-primary:active,
@@ -272,16 +277,16 @@
 .dd-secondary {
   background: transparent;
   color: inherit;
-  border-color: #66859566;
+  border-color: var(--rule);
 }
 .dd-secondary:hover {
-  background: #91bbd017;
+  background: var(--linen);
 }
 .dd-intro small {
   margin-top: 12px;
   font-size: 12px;
   letter-spacing: 0.01em;
-  color: #7997a5;
+  color: var(--ink-soft);
 }
 .dd-round {
   position: absolute;
@@ -289,14 +294,14 @@
   left: 24px;
   pointer-events: none;
   font: 12px/1.5 monospace;
-  color: #bbd8e5;
+  color: var(--ink);
   z-index: 2;
 }
 .dd-round > span {
   display: block;
   font-family: inherit;
   font-size: 12px;
-  color: #6e94a6;
+  color: var(--ink-soft);
   margin-top: 4px;
 }
 .dd-planned {
@@ -309,28 +314,28 @@
   pointer-events: none;
 }
 .dd-planned span {
-  border: 1px solid #5a8091;
+  border: 1px solid var(--rule);
   border-radius: 50%;
   width: 27px;
   height: 27px;
   display: grid;
   place-items: center;
   font: 12px monospace;
-  color: #89aab9;
-  background: #0b1b26c9;
+  color: var(--ink-soft);
+  background: var(--paper);
   transition:
     background 0.2s,
     color 0.2s;
 }
 .dd-planned span.planned {
-  background: #c1eaff;
-  color: #183747;
-  border-color: #c1eaff;
+  background: var(--paper);
+  color: var(--ink);
+  border-color: var(--sage);
 }
 .dd-planned span.done {
-  background: #dabb82;
-  border-color: #eed1a2;
-  color: #162736;
+  background: var(--linen);
+  border-color: var(--sage);
+  color: var(--ink);
 }
 .dd-cursor,
 .dd-invalid {
@@ -342,13 +347,13 @@
 .dd-cursor {
   width: 16px;
   height: 16px;
-  border: 2px solid #d4f2ff;
+  border: 2px solid var(--sage);
   border-radius: 50%;
-  box-shadow: 0 0 18px #bceaff55;
+  box-shadow: 0 0 18px color-mix(in srgb, var(--ink) 14%, transparent);
 }
 .dd-invalid {
   font-size: 26px;
-  color: #eba096;
+  color: var(--clay);
 }
 .dd-tutorial {
   position: absolute;
@@ -365,7 +370,7 @@
 }
 .dd-tutorial path {
   fill: none;
-  stroke: #d0f3ff;
+  stroke: var(--ink);
   stroke-width: 3;
   stroke-dasharray: 6 6;
   animation: dd-dash 1s linear infinite;
@@ -379,20 +384,20 @@
   max-width: 90%;
   width: max-content;
   padding: 11px 17px;
-  border: 1px solid #c3e2f02e;
+  border: 1px solid var(--rule);
   border-radius: 6px;
-  background: #0b202de8;
-  color: #e4f4fa;
+  background: var(--paper);
+  color: var(--ink);
   font-size: 15px;
   margin: 0;
-  backdrop-filter: blur(6px);
+  backdrop-filter: none;
 }
 .dd-hand {
   position: absolute;
   font-size: 24px;
   transform: translate(-50%, -25%);
   animation: dd-hand 1.9s ease-in-out infinite;
-  color: #eaf5f7;
+  color: var(--ink);
   filter: drop-shadow(0 2px 4px #0009);
 }
 .dd-toast {
@@ -403,17 +408,17 @@
   z-index: 5;
   pointer-events: none;
   padding: 10px 17px;
-  color: #c9efff;
-  background: #122a38ed;
-  border: 1px solid #bcdded44;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
   border-radius: 6px;
   font-size: 14px;
   white-space: nowrap;
 }
 .dd-toast.gold {
-  color: #ffe2ac;
-  border-color: #eac48666;
-  background: #352e21e8;
+  color: var(--clay);
+  border-color: var(--rule);
+  background: var(--paper-raised);
 }
 .dd-combo {
   position: absolute;
@@ -421,28 +426,28 @@
   bottom: 55px;
   font: 500 48px/1 monospace;
   pointer-events: none;
-  color: #f5d6a5;
+  color: var(--clay);
   z-index: 4;
 }
 .dd-combo span {
   display: block;
   font: 12px monospace;
   letter-spacing: 0.08em;
-  color: #caa878;
+  color: var(--clay);
   margin-top: 7px;
 }
 .dd-express {
   position: absolute;
   right: 22px;
   top: 28px;
-  color: #ffe0a3;
+  color: var(--clay);
   font-size: 13px;
   pointer-events: none;
 }
 .dd-express span {
   display: block;
   text-align: right;
-  color: #b79c72;
+  color: var(--clay);
   font: 12px monospace;
   margin-top: 4px;
 }
@@ -450,7 +455,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: #e9d5a613;
+  background: var(--sage-soft);
   animation: dd-complete 1.6s ease-out both;
 }
 .dd-toolbar {
@@ -460,14 +465,14 @@
   justify-content: space-between;
   gap: 8px;
   padding: 8px 20px;
-  background: #0b1c27;
-  border-top: 1px solid #a1c2d019;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
   z-index: 3;
 }
 .dd-toolbar p {
   font-size: 13px;
   line-height: 1.35;
-  color: #9fbdca;
+  color: var(--ink-soft);
   margin: 0;
   max-width: 70%;
 }
@@ -479,17 +484,17 @@
 .dd-toolbar button {
   min-height: 36px;
   min-width: 36px;
-  border: 1px solid #587a8e38;
+  border: 1px solid var(--rule);
   border-radius: 5px;
   display: grid;
   place-items: center;
   background: transparent;
-  color: #b4d8e8;
+  color: var(--ink);
   font-size: 13px;
   padding: 5px;
 }
 .dd-toolbar button:hover {
-  background: #76b5d01a;
+  background: var(--linen);
 }
 .dd-toolbar button:disabled {
   opacity: 0.25;
@@ -497,17 +502,17 @@
 .dd-key-help {
   padding: 11px 18px !important;
   margin: 0 !important;
-  background: #142a36;
+  background: var(--paper);
   font-size: 12px !important;
   line-height: 1.5;
-  color: #bad4df;
+  color: var(--ink);
   z-index: 3;
 }
 .dd-overlay {
   position: absolute;
   inset: 0;
-  background: #081722e8;
-  backdrop-filter: blur(9px);
+  background: var(--paper);
+  backdrop-filter: none;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -515,7 +520,7 @@
   text-align: center;
   padding: 24px;
   z-index: 10;
-  color: #deedf2;
+  color: var(--ink);
   cursor: default;
 }
 .dd-overlay h3 {
@@ -523,18 +528,18 @@
   letter-spacing: -0.035em;
   line-height: 1.1;
   margin: 12px 0;
-  color: #edf5f4;
+  color: var(--ink);
   font-weight: 400;
 }
 .dd-overlay p {
   font-size: 15px;
-  color: #9fbeca;
+  color: var(--ink-soft);
   max-width: 620px;
   line-height: 1.6;
   margin: 12px 0 20px;
 }
 .dd-result {
-  background: #091923eb;
+  background: var(--paper);
 }
 .dd-result h3 {
   font-size: clamp(32px, 4.7vw, 58px);
@@ -545,12 +550,12 @@
   line-height: 1.1;
   letter-spacing: -0.04em;
   font-weight: 400;
-  color: #ccecff;
+  color: var(--ink);
 }
 .dd-final-score small {
   display: block;
   font: 12px/1.4 monospace;
-  color: #7ba4b9;
+  color: var(--ink-soft);
   letter-spacing: 0.06em;
   margin-top: 7px;
 }
@@ -567,11 +572,11 @@
 }
 .dd-result-stats strong {
   font: 25px monospace;
-  color: #e1d1b4;
+  color: var(--clay);
 }
 .dd-result-stats span {
   font-size: 12px;
-  color: #93b0be;
+  color: var(--ink-soft);
 }
 .dd-result-actions {
   display: flex;
@@ -583,7 +588,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 20px;
-  color: #abcee0;
+  color: var(--ink);
   border: 0;
   background: transparent;
   font-size: 14px;
@@ -595,7 +600,7 @@
   max-width: 1440px;
   margin: 20px auto 0;
   font-size: 12px !important;
-  color: #6c7f87;
+  color: var(--ink-soft);
   line-height: 1.5;
 }
 .dd-afterword {
@@ -606,7 +611,7 @@
 .dd-afterword > p {
   font-size: 16px;
   line-height: 1.7;
-  color: #47606b;
+  color: var(--ink-soft);
 }
 .dd-afterword > div {
   display: flex;
@@ -614,14 +619,14 @@
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 22px;
-  color: #677f8b;
+  color: var(--ink-soft);
   font-size: 13px;
 }
 .dd-case {
   max-width: 1440px;
   margin: 55px auto 0;
   padding-top: 35px;
-  border-top: 1px solid #788f9844;
+  border-top: 1px solid var(--rule);
   scroll-margin-top: 105px;
   outline: none;
 }
@@ -631,12 +636,12 @@
   letter-spacing: -0.04em;
   line-height: 1.15;
   margin: 20px 0;
-  color: #18313f;
+  color: var(--ink);
 }
 .dd-case p {
   font-size: 16px;
   line-height: 1.7;
-  color: #59707b;
+  color: var(--ink-soft);
   max-width: 950px;
 }
 .dd-case-grid {
@@ -648,7 +653,7 @@
 .dd-case h4 {
   font-size: 16px;
   font-weight: 600;
-  color: #244958;
+  color: var(--ink-soft);
   margin-bottom: 10px;
 }
 .dd-case-topics {
@@ -662,16 +667,16 @@
 }
 .dd-case .dd-tech {
   font: 13px/1.7 monospace;
-  color: #536f7c;
+  color: var(--ink-soft);
   margin: 30px 0;
 }
 .delivery-dash button:focus-visible,
 .dd-wordmark:focus-visible {
-  outline: 2px solid #68bad9;
+  outline: 2px solid var(--rule);
   outline-offset: 4px;
 }
 .delivery-dash .dd-case:focus-visible {
-  outline: 2px solid #68bad9;
+  outline: 2px solid var(--rule);
   outline-offset: 8px;
 }
 @keyframes dd-spin {
@@ -776,8 +781,8 @@
     justify-content: flex-start;
     background: linear-gradient(
       180deg,
-      #091620 14%,
-      #091620cc 35%,
+      var(--paper) 14%,
+      var(--paper) 35%,
       transparent 60%
     );
   }
@@ -956,8 +961,8 @@
 .dd-stop-check {
   position: absolute;
   transform: translate(-50%, -50%);
-  color: #10242e;
-  background: #b9eaff;
+  color: var(--ink);
+  background: var(--sage-soft);
   width: 19px;
   height: 19px;
   border-radius: 50%;
