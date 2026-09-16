@@ -1,5 +1,7 @@
 # Junie Portfolio
 
+Live: https://junie-portfolio.yolanyuyu.workers.dev
+
 Responsive engineering, data and operations portfolio built with React, TypeScript, Vinext and Cloudflare Workers. Includes interactive delivery and capacity experiences, plus real project screenshots and links to live applications.
 
 ## Local development
