@@ -1,18 +1,23 @@
 'use client';
-import { miniweather, groundDsp } from './content';
+import Image from 'next/image';
+import { miniweather, groundDsp, capacityProject } from './content';
 export default function ProjectPreview({ id }: { id: string }) {
+  if (id === 'capacity') return (
+    <div className="preview capacity-project-preview" aria-label="Last-Mile Quality Intelligence actual dashboard screenshot">
+      <div className="preview-chrome"><span><i /><i /><i /></span><span>LAST-MILE / QUALITY INTELLIGENCE</span><span>↗</span></div>
+      <Image width={1280} height={720} unoptimized className="capacity-project-image" src={capacityProject.screenshot} alt="Actual Streamlit regional performance overview with station and DSP filters, delivery quality KPIs and capacity utilization" loading="lazy" draggable={false} />
+      <div className="preview-disclaimer">Actual project screenshot · Synthetic analytics data</div>
+    </div>
+  );
   if (id === 'ground-dsp') return <div className="preview ground-preview" aria-label="GROUND DSP recruitment website screenshot"><div className="preview-chrome"><span><i /><i /><i /></span><span>GROUND / DSP PARTNER RECRUITMENT</span><span>↗</span></div><img className="ground-preview-image" src={groundDsp.screenshot} alt="GROUND DSP recruitment website showing its service-area map and partner recruitment introduction" loading="lazy" draggable={false} /><div className="preview-disclaimer">Live website screenshot · Application API & email notifications</div></div>;
   if (id === 'miniweather') return (
-    <div className="preview mw-preview" aria-label="MiniWeather actual browser preview screenshots">
-      <div className="preview-chrome"><span><i /><i /><i /></span><span>MINIWEATHER / PRODUCT ENGINEERING</span><span>↗</span></div>
-      <div className="mw-preview-screens">
-        {[
-          ['01-today.png', 'Today: sample weather and a recommended outfit'],
-          ['02-forecast.png', 'Forecast: hourly and weekly synthetic weather'],
-          ['04-style.png', 'Style: personal clothing preferences'],
-        ].map(([file, alt]) => <img key={file} src={miniweather.screenshotBase + file} alt={alt} loading="lazy" draggable={false} />)}
+    <div className="preview mw-preview" aria-label="MiniWeather real weather and AI outfit examples">
+      <div className="preview-chrome"><span><i /><i /><i /></span><span>MINIWEATHER / AI WEATHER + OOTD</span><span>↗</span></div>
+      <div className="mw-live-screens">
+        <Image width={407} height={695} unoptimized src={miniweather.screenshot} alt="Actual MiniWeather app showing Atlanta weather: 29°C, partly cloudy, feels like 34°C" loading="lazy" draggable={false} />
+        <Image width={407} height={695} unoptimized src={miniweather.outfitScreenshot} alt="Actual Qwen and FLUX result: white cotton T-shirt, beige linen trousers and white sneakers" loading="lazy" draggable={false} />
       </div>
-      <div className="preview-disclaimer">Actual browser preview · Synthetic weather · Rule-based recommendations</div>
+      <div className="preview-disclaimer">Actual app captures · Real weather + AI output · Sep 16, 2026</div>
     </div>
   );
   return (
@@ -27,137 +32,11 @@ export default function ProjectPreview({ id }: { id: string }) {
           <i />
         </span>
         <span>
-          {id === 'capacity'
-            ? 'CAPACITY / ANALYTICS'
-            : id === 'miniweather'
-              ? 'MINIWEATHER / PROTOTYPE'
-              : id === 'commerce'
-                ? 'COMMERCE / SERVER'
-                : 'OOTD / MINI PROGRAM'}
+          {id === 'commerce' ? 'COMMERCE / SERVER' : 'OOTD / MINI PROGRAM'}
         </span>
         <span>↗</span>
       </div>
-      {id === 'capacity' ? (
-        <div className="dashboard-preview">
-          <div className="dash-side">
-            <b>RC /</b>
-            <span>Overview</span>
-            <span>Capacity</span>
-            <span>Exceptions</span>
-            <span>Scenarios</span>
-          </div>
-          <div className="dash-content">
-            <div className="dash-title">
-              <span>Capacity overview</span>
-              <span>Illustrative data</span>
-            </div>
-            <div className="dash-metrics">
-              <div>
-                <span>Daily volume</span>
-                <strong>1,200</strong>
-              </div>
-              <div>
-                <span>Available capacity</span>
-                <strong>1,500</strong>
-              </div>
-              <div>
-                <span>Load</span>
-                <strong>
-                  80<small>%</small>
-                </strong>
-              </div>
-            </div>
-            <div className="dash-chart">
-              <div className="chart-grid" />
-              <svg viewBox="0 0 420 105" aria-hidden="true">
-                <path
-                  d="M0 80 L45 66 L90 77 L135 34 L180 48 L225 20 L270 42 L315 16 L360 27 L420 5"
-                  fill="none"
-                  stroke="#667457"
-                  strokeWidth="2"
-                />
-                <path
-                  d="M0 95 L45 85 L90 87 L135 65 L180 80 L225 58 L270 65 L315 40 L360 45 L420 30"
-                  fill="none"
-                  stroke="#c7bba2"
-                  strokeWidth="1"
-                />
-              </svg>
-            </div>
-            <div className="dash-bottom">
-              <span>VOLUME / CAPACITY</span>
-              <span>EXPLORE THE RELATIONSHIP →</span>
-            </div>
-          </div>
-        </div>
-      ) : id === 'miniweather' ? (
-        <div className="weather-preview">
-          <div className="weather-overview">
-            <span className="weather-city">BEIJING / SAMPLE CONDITIONS</span>
-            <div className="weather-now">
-              <strong>
-                23<span>°</span>
-              </strong>
-              <svg viewBox="0 0 64 64" aria-hidden="true">
-                <circle
-                  cx="32"
-                  cy="32"
-                  r="12"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-                <path
-                  d="M32 5V12M32 52V59M5 32H12M52 32H59M13 13L18 18M46 46L51 51M13 51L18 46M46 18L51 13"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
-            </div>
-            <p>
-              Clear skies.
-              <br />
-              <em>A considered day.</em>
-            </p>
-            <span className="weather-footer">WEATHER / OUTFIT / PROFILE</span>
-          </div>
-          <div className="weather-details">
-            <div className="weather-context">
-              <span>CONTEXT ASSEMBLY</span>
-              <div>
-                <small>CITY WEATHER</small>
-                <b>23° / CLEAR</b>
-              </div>
-              <div>
-                <small>USER PREFERENCE</small>
-                <b>COMFORT / COLOR</b>
-              </div>
-              <div>
-                <small>TODAY’S STYLE</small>
-                <b>USER SELECTED</b>
-              </div>
-            </div>
-            <div
-              className="weather-ai-flow"
-              aria-label="AI recommendation flow"
-            >
-              <span>↓</span>
-              <strong>DEEPSEEK</strong>
-              <span>↓</span>
-            </div>
-            <div className="weather-output">
-              <span>GENERATED OUTPUT</span>
-              <div>
-                <i>IMAGE</i>
-                <p>
-                  Outfit preview
-                  <br />+ recommendation
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : id === 'commerce' ? (
+      {id === 'commerce' ? (
         <div className="commerce-preview">
           <div className="code-panel">
             <span>SERVER LAYER</span>
@@ -208,9 +87,7 @@ export default function ProjectPreview({ id }: { id: string }) {
         </div>
       )}
       <div className="preview-disclaimer">
-        {id === 'capacity'
-          ? 'Synthetic visualization'
-          : 'Conceptual visualization'}{' '}
+        Conceptual visualization{' '}
         · not a production screenshot
       </div>
     </div>

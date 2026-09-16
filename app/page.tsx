@@ -46,7 +46,7 @@ import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import DeliveryDash from './DeliveryDash';
 import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
-import { profile, miniweather, groundDsp } from './content';
+import { profile, miniweather, groundDsp, capacityProject } from './content';
 const Scene = lazy(() => import('./SystemScene'));
 const spring = {
   type: 'spring' as const,
@@ -399,7 +399,7 @@ function Explorer({
   const change = (d: number) => setIndex((index + d + count) % count);
   const projectRole = [
     'Analytics exploration',
-    'Native UI & shared recommendation logic',
+    'Real weather & generative AI',
     'Backend development',
     'Application flow & email integration',
   ][index];
@@ -541,7 +541,8 @@ function Explorer({
           >
             {p.id === 'miniweather' ? 'View Case Study' : 'Explore case study'} <MoveUpRight size={24} />
           </button>
-          {p.id === 'miniweather' && <><a className="mw-action" href={miniweather.demo}>Live Demo <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
+          {p.id === 'capacity' && <><a className="mw-action" href={capacityProject.screenshot} target="_blank" rel="noreferrer">View dashboard screenshot <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
+          {p.id === 'miniweather' && <><a className="mw-action" href={miniweather.demo} target="_blank" rel="noreferrer">Open Live App <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
           {p.id === 'ground-dsp' && <><a className="mw-action" href={groundDsp.live}>Become a DSP <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
           </div>
         </div>
@@ -587,21 +588,9 @@ function Explorer({
                 ))}
               </div>
               {p.id === 'capacity' && (
-                <button
-                  className="primary-button case-play"
-                  onClick={() => {
-                    setOpened(false);
-                    window.setTimeout(
-                      () =>
-                        document.getElementById('playground')?.scrollIntoView({
-                          behavior: reduced ? 'instant' : 'smooth',
-                        }),
-                      80,
-                    );
-                  }}
-                >
-                  Try the Operations Playground <ArrowDown size={16} />
-                </button>
+                <a className="primary-button case-play" href={capacityProject.screenshot} target="_blank" rel="noreferrer">
+                  View actual dashboard screenshot <ArrowUpRight size={16} />
+                </a>
               )}
               {p.url && (
                 <a className="primary-button" href={p.url}>
@@ -609,7 +598,19 @@ function Explorer({
                 </a>
               )}
               {p.id === 'ground-dsp' && <div className="ground-dsp-invite"><div><h3>Interested in becoming our DSP?</h3><p>Explore available service areas and submit your application on our partner recruitment website.</p></div><a className="primary-button" href={groundDsp.live}>Become a DSP <ArrowUpRight size={18} /></a></div>}
-              {p.id === 'miniweather' && <div className="mw-case-links"><a className="primary-button" href={miniweather.demo}>Live Demo <ArrowUpRight size={18} /></a><a className="mw-action" href={miniweather.caseStudy}>Read the full case study <ArrowUpRight size={18} /></a><p>Synthetic weather · Explainable rules · Browser screenshots. The linked repository may not yet include this latest local implementation.</p></div>}
+              {p.id === 'miniweather' && (
+                <section className="mw-real-example" aria-labelledby="mw-example-heading">
+                  <div className="mw-example-copy">
+                    <span className="eyebrow">A REAL GENERATION · SEPTEMBER 16, 2026</span>
+                    <h3 id="mw-example-heading">Atlanta, dressed for a warm day.</h3>
+                    <p>29°C, feels like 34°C · 65% humidity · 0% rain chance · UV 5.7. Preferences: Minimal / Everyday / Balanced comfort.</p>
+                    <p>The generated look pairs a lightweight white cotton T-shirt with beige linen trousers, white canvas sneakers, sunglasses and a leather crossbody bag. Qwen recommended breathable fabrics for the heat and humidity; FLUX visualized the outfit from its image prompt.</p>
+                    <p className="mw-example-note">Captured from the running app using real weather and AI APIs. This saved example is not a current forecast; each new request can produce a different look.</p>
+                    <a className="primary-button" href={miniweather.demo} target="_blank" rel="noreferrer">Try your city & style <ArrowUpRight size={18} /></a>
+                  </div>
+                  <a href={miniweather.outfitScreenshot} target="_blank" rel="noreferrer" aria-label="View the actual AI outfit screenshot full size"><img src={miniweather.outfitScreenshot} width="407" height="695" alt="Saved AI outfit result from MiniWeather, generated for Atlanta" loading="lazy" /></a>
+                </section>
+              )}
             </div>
           </DialogContent>
         </Dialog>

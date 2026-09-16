@@ -1177,3 +1177,17 @@ nav a[aria-current] > span {
     transform: none;
   }
 }
+
+.capacity-project-image {display:block;width:100%;height:calc(100% - 62px);object-fit:contain;background:#f5f7fb}
+.capacity-project-preview .preview-disclaimer {font-family:var(--font-body);font-size:11px;letter-spacing:0}
+@media(max-width:600px){.capacity-project-image{height:calc(100% - 49px)}.capacity-project-preview .preview-disclaimer{font-size:9px;line-height:1.2}}
+
+/* Real MiniWeather app captures and a documented generation example. */
+.mw-live-screens{height:calc(100% - 62px);display:flex;align-items:center;justify-content:center;gap:6%;padding:16px 7%;background:#edeaf1;overflow:hidden}
+.mw-live-screens img{height:100%;width:auto;max-width:44%;object-fit:contain;border-radius:12px;box-shadow:0 8px 24px #302b3920;background:#faf9f8}
+.mw-real-example{margin-top:28px;padding:28px;border:1px solid var(--rule);border-radius:18px;background:var(--paper);display:grid;grid-template-columns:1.3fr .7fr;gap:30px;align-items:center}
+.mw-example-copy h3{font-family:var(--font-editorial);font-size:clamp(25px,3vw,34px);line-height:1.2;margin:14px 0}
+.mw-example-copy p{font-size:16px;line-height:1.7;margin-bottom:18px}
+.mw-example-copy .mw-example-note{font-size:14px;opacity:.75}
+.mw-real-example img{width:100%;height:auto;max-height:560px;object-fit:contain;border-radius:12px}
+@media(max-width:640px){.mw-real-example{grid-template-columns:1fr;padding:20px;gap:22px}.mw-real-example img{max-height:480px}.mw-live-screens{gap:5%;padding:12px 5%}.mw-preview .preview-disclaimer{font-size:10px;letter-spacing:0}}

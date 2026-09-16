@@ -17,35 +17,35 @@ export const profile = {
     {
       id: 'capacity',
       title: 'Root Cause & Capacity',
-      type: 'Personal analytics project',
-      stack: 'Streamlit · Pandas · Plotly',
+      type: 'Operations Intelligence · Data & Analytics',
+      stack: 'Python · DuckDB / SQL · Streamlit · Pandas · Plotly',
       intro:
-        'Connecting delivery performance, capacity utilization and the reasons behind exceptions.',
+        'A last-mile operations control tower connecting delivery quality, root-cause diagnosis and capacity planning.',
       problem:
-        'Delivery timeliness and capacity utilization need to be considered together when examining last-mile exceptions.',
+        'Regional operations teams need a consistent way to identify service deterioration, understand its drivers and evaluate capacity changes across stations and DSPs.',
       contribution:
-        'A logistics dashboard covering delivery timeliness, capacity utilization, exception causes and capacity adjustment scenarios.',
+        'Built the Last-Mile Regional Quality Intelligence System: a DuckDB KPI layer, SQL analysis, Python root-cause pipelines and a Streamlit dashboard with executive, station / DSP, root-cause, capacity and East ZIP difficulty views.',
       approach:
-        'Use Streamlit, Pandas and Plotly to explore these operational questions. The interactive example below isolates the relationship between parcel volume and available capacity.',
+        'Transform reproducible package-level data into weighted KPIs, provider benchmarks, exception Pareto analysis, utilization thresholds and anomaly alerts. Compare constrained capacity transfers through before-and-after scenarios. The standalone ZIP difficulty map uses public data.',
       outcome:
-        'An analytical project for exploring capacity trade-offs. The example on this site uses synthetic data; no measured business impact or production deployment is claimed.',
-      url: '',
+        'A working analytics application with bilingual EN / 中文 navigation. The image shown here is the actual project dashboard captured in its repository. Operational metrics and capacity scenarios use synthetic project data; the ZIP map uses separate public sources.',
+      url: 'https://github.com/yingchi0619/last-mile-quality-intelligence',
     },
     {
       id: 'miniweather',
       title: 'MiniWeather',
-      type: 'WeChat Mini Program · Product Engineering',
-      stack: 'JavaScript · WXML / WXSS · Rule engine · Weather adapter',
+      type: 'AI Weather + OOTD Web App',
+      stack: 'Next.js · TypeScript · Open-Meteo · Cloudflare Workers AI',
       intro:
-        'Weather-powered personal styling assistant.',
+        'Real weather. Personal style. An AI-generated outfit for the day ahead.',
       problem:
         'A forecast does not tell you what to wear. Temperature swings, rain and personal comfort preferences need to become practical, understandable outfit choices.',
       contribution:
-        'Built Today, Forecast, Style, Profile, onboarding, city selection and outfit detail flows. A native WeChat interface and accessible browser preview share the same weather-aware outfit engine, personal style preferences and formatting logic.',
+        'Rebuilt MiniWeather as a responsive full-stack web app with city search, browser geolocation, current weather, hourly and seven-day forecasts, and a personalized AI styling studio. Deployed the working application on Render.',
       approach:
-        'Use deterministic rules to combine apparent temperature, hourly and weekly forecasts, rain, wind and personal sensitivity. Separate weather access, preference persistence and presentation. The responsive mini-program UI includes recovery for denied location, unavailable weather, malformed storage and empty collections.',
+        'Normalize Open-Meteo weather on the server, then combine temperature, feels-like temperature, rain, wind, humidity and UV with style and comfort preferences. Qwen generates validated outfit JSON and an image prompt; FLUX uses that same prompt to visualize the recommendation. Server-side credentials, recent-result caching and retry states support the full flow.',
       outcome:
-        'A working browser demo with explicitly labeled synthetic weather and explainable rule-based recommendations, not connected AI. The project reports 18 Node/native-logic tests and 12 browser tests passing. A weather adapter exists, but the live backend, WeChat DevTools compilation and physical-device validation remain outstanding. Screenshots show the browser preview.',
+        'A live application connecting real weather to AI outfit recommendations and generated imagery. The examples below were captured from the running application with real API responses on September 16, 2026; they are saved examples, not current forecasts. AI generation depends on provider availability and usage limits.',
       url: 'https://github.com/yingchi0619/miniweather',
     },
     {
@@ -79,13 +79,17 @@ export const profile = {
 };
 
 export const miniweather = {
-  demo: '/projects/miniweather/miniweather/prototype/index.html',
-  caseStudy: '/projects/miniweather/docs/case-study.html',
-  screenshotBase: '/projects/miniweather/docs/screenshots/',
-  highlights: ['Weather-aware outfit engine', 'Personal style preferences', 'Hourly & weekly forecasts', 'Responsive mini-program UI'],
+  demo: 'https://miniweather-py9p.onrender.com/',
+  screenshot: '/projects/miniweather/live/dashboard.png',
+  outfitScreenshot: '/projects/miniweather/live/outfit.png',
+  highlights: ['Live Open-Meteo forecasts', 'Qwen outfit recommendations', 'FLUX outfit imagery', 'Responsive full-stack web app'],
 };
 
 export const groundDsp = {
   live: 'https://ground-dsp-website.onrender.com/',
   screenshot: '/projects/ground-dsp/website.png',
+};
+
+export const capacityProject = {
+  screenshot: '/projects/last-mile-quality-intelligence/executive-overview.jpg',
 };
