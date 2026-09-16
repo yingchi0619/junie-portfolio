@@ -816,7 +816,7 @@ export default function Home() {
       </a>
       <header className="header">
         <a className="brand" href="#home">
-          junie<span> / zhu</span>
+          Yingchi <span>Zhu</span>
           <i />
         </a>
         <nav aria-label="Main navigation">
