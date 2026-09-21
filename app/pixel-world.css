@@ -1,23 +1,9 @@
-@font-face {
-  font-family: 'Pixelify Sans';
-  src: url('/fonts/pixelify-regular.ttf') format('truetype');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: 'Pixelify Sans';
-  src: url('/fonts/pixelify-semibold.ttf') format('truetype');
-  font-weight: 600 800;
-  font-style: normal;
-  font-display: swap;
-}
 :root {
   --pixel-outline: #79664b;
   --pixel-shadow: #b6a17d;
   --pixel-edge: 2px solid var(--pixel-outline);
   --pixel-step: 4px 4px 0 var(--pixel-shadow);
-  --pixel-font: 'Pixelify Sans', 'Courier New', monospace;
+  --font-interface: var(--font-body);
 }
 body {
   background: var(--paper);
@@ -44,13 +30,14 @@ h2 em,
   font-style: normal;
 }
 .header {
-  height: 78px;
-  border-bottom: 2px solid var(--pixel-outline);
-  box-shadow: 0 4px 0 #d8c9a7;
+  min-height: 78px;
+  height: auto;
+  border-bottom: 1px solid var(--rule);
+  box-shadow: none;
   z-index: 40;
 }
 .brand {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: 30px;
   letter-spacing: -1px;
   gap: 5px;
@@ -66,7 +53,7 @@ h2 em,
   gap: 10px;
 }
 .header nav a {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: 19px;
   border-radius: 0;
   padding: 8px 12px;
@@ -116,7 +103,7 @@ h2 em,
   box-shadow: 3px -3px 0 #a1ac7c;
 }
 .pixel-intro h1 {
-  font: 400 clamp(56px, 5.5vw, 88px)/1.05 var(--pixel-font);
+  font: 400 clamp(56px, 5.5vw, 88px)/1.05 var(--font-interface);
   margin: 16px 0 0;
   letter-spacing: -0.04em;
   white-space: nowrap;
@@ -176,7 +163,7 @@ h2 em,
   display: flex;
   gap: 10px;
   align-items: center;
-  font: 19px var(--pixel-font);
+  font: 19px var(--font-interface);
 }
 .world-topbar > span:nth-child(2) {
   font-size: 10px;
@@ -224,7 +211,7 @@ h2 em,
   box-shadow: 2px 3px 0 #44352669;
   padding: 6px 8px;
   min-height: 30px;
-  font: 16px/1 var(--pixel-font);
+  font: 16px/1 var(--font-interface);
   white-space: nowrap;
   z-index: 4;
   transition:
@@ -275,7 +262,7 @@ h2 em,
   background: #fff5d7;
   border: 1px solid #7a603d;
   color: #53422f;
-  font: 10px var(--pixel-font);
+  font: 10px var(--font-interface);
   padding: 2px 4px;
   line-height: 1;
 }
@@ -334,7 +321,7 @@ h2 em,
   display: flex;
   align-items: center;
   gap: 8px;
-  font: 22px var(--pixel-font);
+  font: 22px var(--font-interface);
   padding-bottom: 14px;
   border-bottom: 1px dashed var(--rule);
 }
@@ -360,11 +347,11 @@ h2 em,
   color: var(--ink-soft);
 }
 .journal-portrait strong {
-  font: 20px var(--pixel-font);
+  font: 20px var(--font-interface);
   color: var(--ink);
 }
 .journal-content h2 {
-  font: 30px/1.05 var(--pixel-font);
+  font: 30px/1.05 var(--font-interface);
   letter-spacing: -0.02em;
   margin: 15px 0;
 }
@@ -451,7 +438,7 @@ h2 em,
   color: #fff8e6;
   border: 2px solid #465238;
   box-shadow: 3px 3px 0 #b5a583;
-  font: 18px/1.2 var(--pixel-font);
+  font: 18px/1.2 var(--font-interface);
   transition:
     transform 120ms,
     box-shadow 120ms;
@@ -504,7 +491,7 @@ h2 em,
   position: absolute;
   top: -13px;
   left: 50%;
-  font: 24px var(--pixel-font);
+  font: 24px var(--font-interface);
   color: var(--gold);
   background: var(--paper);
   padding: 0 12px;
@@ -517,7 +504,7 @@ h2 em,
   letter-spacing: 0.08em;
 }
 .section h2 {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: clamp(38px, 4.4vw, 64px);
   font-weight: 400;
   line-height: 1.05;
@@ -551,7 +538,7 @@ h2 em,
   background: #e3d4ae;
   border-bottom: 2px solid #9c8762;
   color: #584b36;
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: 14px;
 }
 .preview-chrome i {
@@ -592,7 +579,7 @@ h2 em,
   box-shadow: 2px 2px 0 #a4ad7b;
 }
 .project-info h3 {
-  font: 400 clamp(30px, 3.5vw, 46px)/1.1 var(--pixel-font);
+  font: 400 clamp(30px, 3.5vw, 46px)/1.1 var(--font-interface);
 }
 .tags span,
 .toolkit span,
@@ -609,7 +596,7 @@ h2 em,
   border: 2px solid var(--pixel-outline);
   border-radius: 0;
   box-shadow: var(--pixel-step);
-  font: 20px var(--pixel-font);
+  font: 20px var(--font-interface);
   transition:
     transform 120ms,
     box-shadow 120ms;
@@ -636,7 +623,7 @@ h2 em,
   box-shadow: 8px 8px 0 #3d352980;
 }
 .case-title {
-  font-family: var(--pixel-font) !important;
+  font-family: var(--font-interface) !important;
   font-weight: 400 !important;
 }
 .case-close {
@@ -645,7 +632,7 @@ h2 em,
   background: var(--paper-raised);
 }
 .case-grid h3 {
-  font: 24px var(--pixel-font);
+  font: 24px var(--font-interface);
   color: var(--sage);
 }
 .mw-real-example,
@@ -667,7 +654,7 @@ h2 em,
   border: 1px solid #b8a47e;
   border-radius: 0;
   box-shadow: 2px 2px 0 #c5b28b;
-  font: 16px var(--pixel-font);
+  font: 16px var(--font-interface);
 }
 .presets button.active,
 .presets button[aria-pressed='true'] {
@@ -678,7 +665,7 @@ h2 em,
   background: #e8e6d1;
 }
 .result-metrics strong {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
 }
 .calculation {
   border-radius: 0;
@@ -690,7 +677,7 @@ h2 em,
   border-radius: 0;
 }
 .timeline-trigger strong {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-weight: 400;
   font-size: 30px;
 }
@@ -706,7 +693,7 @@ h2 em,
   border-top: 2px solid var(--rule);
 }
 .toolkit h4 {
-  font: 24px var(--pixel-font);
+  font: 24px var(--font-interface);
   color: var(--sage);
 }
 .toolkit span.skill-active {
@@ -722,7 +709,7 @@ h2 em,
   background: #e9e0c4;
 }
 .contact h2 {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: clamp(42px, 6vw, 82px);
 }
 .contact footer {
@@ -743,7 +730,7 @@ h2 em,
 .delivery-dash .dd-final-score,
 .delivery-dash .dd-overlay h3,
 .delivery-dash .dd-hud strong {
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-weight: 400;
 }
 .delivery-dash .dd-intro h2 em {
@@ -751,7 +738,7 @@ h2 em,
 }
 .delivery-dash .dd-primary,
 .delivery-dash .dd-secondary {
-  font: 20px var(--pixel-font);
+  font: 20px var(--font-interface);
   border-radius: 0;
   border: 2px solid var(--pixel-outline);
   box-shadow: 3px 3px 0 var(--pixel-shadow);
@@ -763,7 +750,7 @@ h2 em,
 .delivery-dash .dd-top-actions button {
   border-radius: 0;
   border: 1px solid var(--rule);
-  font-family: var(--pixel-font);
+  font-family: var(--font-interface);
   font-size: 16px;
 }
 .delivery-dash .dd-tutorial p,
@@ -1157,5 +1144,227 @@ h2 em,
   }
   .pixel-intro h1 .pixel-period {
     transform: translate(2px, -4px);
+  }
+}
+/* Keep pixel character in the artwork; make the interface comfortable to read. */
+.pixel-intro h1,
+.section h2,
+.journal-content h2,
+.project-info h3,
+.contact h2,
+.delivery-dash .dd-intro h2 {
+  font-family: var(--font-editorial);
+  letter-spacing: -0.035em;
+  line-height: 1.14;
+}
+.pixel-intro h1 {
+  font-size: clamp(48px, 5.2vw, 76px);
+}
+.header .brand {
+  font-family: var(--font-body);
+  font-size: 25px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+}
+.header nav a {
+  font-size: 15px;
+  font-weight: 550;
+  line-height: 1.45;
+  text-decoration: none;
+  padding: 8px 12px;
+}
+.header nav a::before,
+.header nav a::after {
+  content: none;
+}
+.pixel-button,
+.explore-button,
+.primary-button,
+.delivery-dash .dd-primary,
+.delivery-dash .dd-secondary {
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+.world-sign {
+  font: 600 13px/1.3 var(--font-body);
+}
+.world-topbar > span:first-child {
+  font: 600 15px/1.4 var(--font-body);
+  letter-spacing: 0.015em;
+}
+.journal-title {
+  font: 600 19px/1.4 var(--font-body);
+}
+.journal-content h2 {
+  font-size: 29px;
+}
+.journal-content p {
+  font-size: 16px;
+  line-height: 1.65;
+}
+.journal-content .journal-tip {
+  font: 13px/1.6 var(--font-body);
+}
+.journal-destinations button {
+  font-size: 14px;
+  min-height: 36px;
+}
+.journal-portrait strong {
+  font: 600 17px/1.5 var(--font-body);
+}
+.journal-portrait img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+}
+.timeline-trigger strong {
+  font: 500 27px/1.2 var(--font-body);
+}
+.toolkit h4 {
+  font: 600 19px/1.4 var(--font-body);
+}
+.preview-chrome {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.025em;
+}
+.village-player {
+  width: 6%;
+  max-width: 68px;
+  transform: translate(-50%, -90%);
+}
+.village-player img {
+  aspect-ratio: 1;
+  filter: none;
+}
+.player-label {
+  font: 600 10px/1.3 var(--font-body);
+  top: -14px;
+  padding: 2px 4px;
+}
+@media (max-width: 1150px) {
+  .world-layout {
+    grid-template-columns: minmax(0, 1fr) 250px;
+  }
+  .journal-content p {
+    font-size: 15px;
+  }
+  .journal-destinations button {
+    font-size: 13px;
+  }
+}
+@media (max-width: 900px) {
+  .header {
+    height: auto;
+    min-height: 110px;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto;
+    gap: 8px;
+    padding: 12px 24px;
+    align-items: center;
+  }
+  .header .brand {
+    height: auto;
+    font-size: 24px;
+    justify-self: start;
+  }
+  .header nav {
+    order: initial;
+    display: flex;
+    width: 100%;
+    gap: 4px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: nowrap;
+  }
+  .header nav a {
+    padding: 6px 8px;
+    font-size: 15px;
+    min-height: 36px;
+  }
+  .header .nav-locale {
+    display: none;
+  }
+  .world-layout {
+    grid-template-columns: 1fr;
+  }
+  .pixel-intro h1 {
+    font-size: 52px;
+  }
+  .pixel-intro {
+    gap: 24px;
+  }
+  .village-player {
+    width: 7%;
+    max-width: 54px;
+  }
+  .world-sign {
+    font-size: 13px;
+  }
+  html {
+    scroll-padding-top: 126px;
+  }
+}
+@media (max-width: 600px) {
+  .header {
+    padding: 12px 16px;
+    gap: 8px;
+    min-height: 108px;
+  }
+  .header nav {
+    gap: 0;
+  }
+  .header nav a {
+    font-size: 14px;
+    padding: 6px 4px;
+  }
+  .pixel-intro h1 {
+    font-size: clamp(40px, 11vw, 60px);
+    white-space: normal;
+  }
+  .world-topbar > span:first-child {
+    font-size: 12px;
+  }
+  .world-sign {
+    font-size: 11px;
+    padding: 4px;
+    min-height: 25px;
+  }
+  .world-sign b {
+    display: none;
+  }
+  .village-player {
+    width: 10%;
+    max-width: 42px;
+  }
+  .player-label {
+    font-size: 8px;
+    padding: 1px 3px;
+    top: -12px;
+  }
+  .journal-content h2 {
+    font-size: 29px;
+  }
+  .journal-content p {
+    font-size: 16px;
+  }
+  .journal-destinations button {
+    font-size: 13px;
+  }
+  .journal-cta {
+    font-size: 15px;
+  }
+  .section h2 {
+    font-size: 36px;
+  }
+  .project-info h3 {
+    font-size: 30px;
+  }
+  .contact h2 {
+    font-size: 40px;
   }
 }

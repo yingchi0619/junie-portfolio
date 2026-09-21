@@ -630,7 +630,6 @@ export default function Home() {
               aria-current={section === id ? 'location' : undefined}
             >
               {label}
-              <span />
             </a>
           ))}
         </nav>

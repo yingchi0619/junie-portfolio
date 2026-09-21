@@ -437,9 +437,9 @@ export default function PixelWorld({
               <span className="player-label">JUNIE</span>
               <Image
                 unoptimized
-                src="/pixel-world/junie.png"
-                width={1024}
-                height={1536}
+                src="/pixel-world/junie-chibi.png"
+                width={1254}
+                height={1254}
                 alt="Original pixel character Junie, wearing olive overalls and a messenger bag"
                 draggable={false}
               />
@@ -482,9 +482,9 @@ export default function PixelWorld({
                   <div className="journal-portrait">
                     <Image
                       unoptimized
-                      src="/pixel-world/junie.png"
-                      width={1024}
-                      height={1536}
+                      src="/pixel-world/junie-chibi.png"
+                      width={1254}
+                      height={1254}
                       alt=""
                     />
                     <span>
@@ -493,11 +493,7 @@ export default function PixelWorld({
                       <strong>Junie Zhu</strong>
                     </span>
                   </div>
-                  <h2>
-                    Every place
-                    <br />
-                    has a story.
-                  </h2>
+                  <h2>Every place has a story.</h2>
                   <p>
                     Move my little character through the village. Visit a
                     building to discover what I build, what I study, and what
