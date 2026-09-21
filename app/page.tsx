@@ -1,32 +1,17 @@
 'use client';
 /* oxlint-disable jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/no-noninteractive-tabindex, jsx-a11y/prefer-tag-over-role -- The named spatial carousel group is intentionally focusable for Left/Right keyboard navigation, with adjacent native controls as an alternative. */
-import {
-  Component,
-  Suspense,
-  lazy,
-  useEffect,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+import { Suspense, useEffect, useRef, useState, type ReactNode } from 'react';
 import {
   AnimatePresence,
   LayoutGroup,
   MotionConfig,
   motion,
-  useScroll,
-  useTransform,
 } from 'motion/react';
 import {
-  ArrowDown,
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   MoveUpRight,
-  Sprout,
-  Code2,
-  NotebookPen,
-  Package,
   X,
 } from 'lucide-react';
 import {
@@ -42,79 +27,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+import Image from 'next/image';
 import ProjectPreview from './ProjectPreview';
 import Playground from './Playground';
 import DeliveryDash from './DeliveryDash';
 import { useSafeReducedMotion as useReducedMotion } from './use-safe-reduced-motion';
 import { profile, miniweather, groundDsp, capacityProject } from './content';
-const Scene = lazy(() => import('./SystemScene'));
+import PixelWorld from './PixelWorld';
 const spring = {
   type: 'spring' as const,
   stiffness: 180,
   damping: 25,
   mass: 1,
 };
-const modes = [
-  {
-    title: 'Build',
-    heading: 'Turn ideas into working systems.',
-    text: 'Frontend, backend and AI-assisted product projects. A foundation in computer engineering, with an interest in how the parts fit together.',
-    project: 1,
-    label: 'MiniWeather interface prototype',
-  },
-  {
-    title: 'Analyze',
-    heading: 'Find the question behind the numbers.',
-    text: 'Explore delivery timeliness, utilization and exception causes. Connect analysis to the operational decisions it can help explain.',
-    project: 0,
-    label: 'Root Cause & Capacity Dashboard',
-  },
-  {
-    title: 'Operate',
-    heading: 'Understand what happens on the ground.',
-    text: 'Hands-on last-mile capacity operations: DSP onboarding, cross-station coordination, route balance, billing and exceptions.',
-    project: 3,
-    label: 'GROUND DSP Partner Recruitment',
-  },
-];
-class SceneBoundary extends Component<
-  { children: ReactNode; fallback: ReactNode },
-  { failed: boolean }
-> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    return this.state.failed ? this.props.fallback : this.props.children;
-  }
-}
-function Fallback({
-  mode,
-  onMode,
-}: {
-  mode: number;
-  onMode: (n: number) => void;
-}) {
-  return (
-    <div className="scene-fallback">
-      <NotebookPen size={48} strokeWidth={1} />
-      <h3>A little space for big questions.</h3>
-      <div>
-        {modes.map((m, i) => (
-          <button
-            key={m.title}
-            aria-pressed={mode === i}
-            onClick={() => onMode(i)}
-          >
-            {m.title}
-          </button>
-        ))}
-      </div>
-      <p>Choose a field note to explore my work.</p>
-    </div>
-  );
-}
 function Magnetic({
   children,
   href,
@@ -146,241 +71,6 @@ function Magnetic({
     </motion.a>
   );
 }
-function Hero({
-  mode,
-  onMode,
-  onProject,
-}: {
-  mode: number;
-  onMode: (n: number) => void;
-  onProject: (n: number) => void;
-}) {
-  const reduced = !!useReducedMotion();
-  const area = useRef<HTMLElement>(null);
-  const stage = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
-  const [visible, setVisible] = useState(true);
-  const [compact, setCompact] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const gesture = useRef({ x: 0, y: 0, hoverX: 0, hoverY: 0, dragging: false });
-  const start = useRef({ x: 0, y: 0 });
-  const { scrollYProgress } = useScroll({
-    target: area,
-    offset: ['start start', 'end start'],
-  });
-  const scale = useTransform(scrollYProgress, [0, 1], [1, 0.96]);
-  const y = useTransform(scrollYProgress, [0, 1], [0, 20]);
-  const rotate = useTransform(scrollYProgress, [0, 1], [0, -1]);
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width:700px)');
-    const resize = () => setCompact(mq.matches);
-    resize();
-    mq.addEventListener('change', resize);
-    const timer = window.setTimeout(() => {
-      try {
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl2');
-        if (!gl) {
-          setFailed(true);
-          return;
-        }
-        gl.getExtension('WEBGL_lose_context')?.loseContext();
-        setReady(true);
-      } catch {
-        setFailed(true);
-      }
-    }, 150);
-    let inView = true;
-    const update = () => setVisible(inView && !document.hidden);
-    const observer = new IntersectionObserver(
-      (entries) => {
-        inView = entries[0].isIntersecting;
-        update();
-      },
-      { threshold: 0.01 },
-    );
-    if (stage.current) observer.observe(stage.current);
-    document.addEventListener('visibilitychange', update);
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-      document.removeEventListener('visibilitychange', update);
-      mq.removeEventListener('change', resize);
-    };
-  }, []);
-  const end = () => {
-    gesture.current.dragging = false;
-    gesture.current.x = 0;
-    gesture.current.y = 0;
-    gesture.current.hoverX = 0;
-    gesture.current.hoverY = 0;
-    setDragging(false);
-  };
-  const fallback = <Fallback mode={mode} onMode={onMode} />;
-  return (
-    <section id="home" className="hero" ref={area}>
-      <div className="hero-topline">
-        <span>YINGCHI “JUNIE” ZHU</span>
-        <span>SOFTWARE / DATA / OPERATIONS</span>
-        <span>NEW JERSEY · NYC</span>
-      </div>
-      <div className="hero-grid">
-        <div className="hero-copy">
-          <div className="edition">
-            <Sprout size={18} strokeWidth={1.4} /> A LITTLE CORNER OF THE
-            INTERNET
-          </div>
-          <h1>
-            Hello, I’m
-            <br />
-            <em>Junie.</em>
-          </h1>
-          <div className="hero-profession">
-            Software Engineer <span>with an operations perspective.</span>
-          </div>
-          <p className="hero-description">
-            I connect software engineering and data analytics with the
-            real-world complexity of last-mile logistics.
-          </p>
-          <div className="hero-actions">
-            <Magnetic href="#work" className="primary-button">
-              Explore selected work <ArrowDown size={17} />
-            </Magnetic>
-            <Magnetic href="#play" className="hero-play-button">
-              Play Delivery Dash <ArrowRight size={17} />
-            </Magnetic>
-          </div>
-          <div className="hero-credentials">
-            <span>NYU TANDON / M.S.</span>
-            <span>GOFO / CAPACITY OPERATIONS</span>
-          </div>
-        </div>
-        <motion.div
-          ref={stage}
-          className={`scene-stage ${dragging ? 'is-dragging' : ''}`}
-          style={reduced ? {} : { scale, y, rotateZ: rotate }}
-          data-scene-state={failed ? 'fallback' : ready ? 'ready' : 'loading'}
-          data-render-state={visible ? 'active' : 'paused'}
-          data-dragging={dragging}
-          onPointerDown={(e) => {
-            if ((e.target as HTMLElement).closest('button') || reduced) return;
-            start.current = { x: e.clientX, y: e.clientY };
-            gesture.current.dragging = true;
-            setDragging(true);
-            e.currentTarget.setPointerCapture(e.pointerId);
-          }}
-          onPointerMove={(e) => {
-            if (reduced) return;
-            const g = gesture.current;
-            if (g.dragging) {
-              g.x = (e.clientX - start.current.x) * 0.006;
-              g.y = (e.clientY - start.current.y) * 0.004;
-            } else if (e.pointerType === 'mouse') {
-              const r = e.currentTarget.getBoundingClientRect();
-              g.hoverX = (e.clientX - r.left - r.width / 2) * 0.00035;
-              g.hoverY = (e.clientY - r.top - r.height / 2) * 0.0003;
-            }
-          }}
-          onPointerUp={end}
-          onPointerCancel={end}
-          onLostPointerCapture={end}
-          onPointerLeave={() => {
-            if (!gesture.current.dragging) {
-              gesture.current.hoverX = 0;
-              gesture.current.hoverY = 0;
-            }
-          }}
-        >
-          <span className="desk-note">Ideas grow here.</span>
-          {failed ? (
-            fallback
-          ) : ready ? (
-            <SceneBoundary fallback={fallback}>
-              <Suspense
-                fallback={
-                  <div className="scene-loading">Opening the workspace…</div>
-                }
-              >
-                <Scene
-                  mode={mode}
-                  onMode={onMode}
-                  visible={visible}
-                  reduced={reduced}
-                  compact={compact}
-                  gesture={gesture}
-                  onFailure={() => setFailed(true)}
-                />
-              </Suspense>
-            </SceneBoundary>
-          ) : (
-            <div className="scene-loading">Opening the workspace…</div>
-          )}
-          <div className="scene-caption">
-            <span>01 / AT MY DESK</span>
-            <span>
-              {reduced
-                ? 'CHOOSE AN OBJECT TO EXPLORE'
-                : dragging
-                  ? 'ROTATING / RELEASE TO RECENTER'
-                  : 'DRAG TO LOOK AROUND · CHOOSE AN OBJECT'}
-            </span>
-          </div>
-        </motion.div>
-      </div>
-      <div className="mode-strip">
-        <div className="mode-tabs" aria-label="Explore capabilities">
-          {modes.map((m, i) => (
-            <button
-              key={m.title}
-              onClick={() => onMode(i)}
-              aria-pressed={mode === i}
-            >
-              <span>
-                {i === 0 ? (
-                  <Code2 size={18} />
-                ) : i === 1 ? (
-                  <NotebookPen size={18} />
-                ) : (
-                  <Package size={18} />
-                )}
-              </span>
-              {m.title}
-              {mode === i && <motion.i layoutId="mode-line" />}
-            </button>
-          ))}
-        </div>
-        <div className="mode-copy" aria-live="polite">
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={mode}
-              initial={reduced ? false : { y: 8, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <h2>{modes[mode].heading}</h2>
-              <p>{modes[mode].text}</p>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-        <button
-          className="mode-project"
-          onClick={() => {
-            onProject(modes[mode].project);
-            document
-              .getElementById('work')
-              ?.scrollIntoView({ behavior: reduced ? 'instant' : 'smooth' });
-          }}
-        >
-          <span>RELATED EXPLORATION</span>
-          <strong>{modes[mode].label}</strong>
-          <ArrowUpRight size={18} />
-        </button>
-      </div>
-    </section>
-  );
-}
 function Explorer({
   index,
   setIndex,
@@ -406,8 +96,8 @@ function Explorer({
   return (
     <section id="work" className="work section">
       <div className="section-top">
-        <span className="eyebrow">02 / PROJECT EXPLORER</span>
-        <span className="section-note">FOUR WAYS INTO THE WORK</span>
+        <span className="eyebrow">02 / THE PROJECT JOURNAL</span>
+        <span className="section-note">A FEW THINGS I’VE GROWN</span>
       </div>
       <div className="work-heading">
         <h2>
@@ -468,8 +158,8 @@ function Explorer({
                 aria-hidden={offset !== 0}
                 animate={{
                   x: `${offset * 77}%`,
-                  rotateY: offset === 0 ? 0 : offset < 0 ? 8 : -8,
-                  rotateZ: offset === 0 ? -1 : offset < 0 ? -5 : 5,
+                  rotateY: 0,
+                  rotateZ: 0,
                   scale: offset === 0 ? 1 : 0.82,
                   z: offset === 0 ? 0 : -120,
                   opacity: Math.abs(offset) > 1 ? 0 : offset === 0 ? 1 : 0.42,
@@ -508,7 +198,9 @@ function Explorer({
             <button aria-label="Previous project" onClick={() => change(-1)}>
               <ArrowLeft size={18} />
             </button>
-            <span>0{index + 1} / 0{count}</span>
+            <span>
+              0{index + 1} / 0{count}
+            </span>
             <button aria-label="Next project" onClick={() => change(1)}>
               <ArrowRight size={18} />
             </button>
@@ -527,23 +219,70 @@ function Explorer({
               {p.title}
             </motion.h3>
             <p>{p.intro}</p>
-            {p.id === 'miniweather' && <ul className="mw-highlights">{miniweather.highlights.map(h => <li key={h}>{h}</li>)}</ul>}
+            {p.id === 'miniweather' && (
+              <ul className="mw-highlights">
+                {miniweather.highlights.map((h) => (
+                  <li key={h}>{h}</li>
+                ))}
+              </ul>
+            )}
             <div className="tags">
               {p.stack.split(' · ').map((s) => (
                 <span key={s}>{s}</span>
               ))}
             </div>
           </div>
-          <div className="project-actions"><button
-            ref={explore}
-            className="explore-button"
-            onClick={() => setOpened(true)}
-          >
-            {p.id === 'miniweather' ? 'View Case Study' : 'Explore case study'} <MoveUpRight size={24} />
-          </button>
-          {p.id === 'capacity' && <><a className="mw-action" href={capacityProject.screenshot} target="_blank" rel="noreferrer">View dashboard screenshot <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
-          {p.id === 'miniweather' && <><a className="mw-action" href={miniweather.demo} target="_blank" rel="noreferrer">Open Live App <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
-          {p.id === 'ground-dsp' && <><a className="mw-action" href={groundDsp.live}>Become a DSP <ArrowUpRight size={17} /></a><a className="mw-action" href={p.url}>GitHub <ArrowUpRight size={17} /></a></>}
+          <div className="project-actions">
+            <button
+              ref={explore}
+              className="explore-button"
+              onClick={() => setOpened(true)}
+            >
+              {p.id === 'miniweather'
+                ? 'View Case Study'
+                : 'Explore case study'}{' '}
+              <MoveUpRight size={24} />
+            </button>
+            {p.id === 'capacity' && (
+              <>
+                <a
+                  className="mw-action"
+                  href={capacityProject.screenshot}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  View dashboard screenshot <ArrowUpRight size={17} />
+                </a>
+                <a className="mw-action" href={p.url}>
+                  GitHub <ArrowUpRight size={17} />
+                </a>
+              </>
+            )}
+            {p.id === 'miniweather' && (
+              <>
+                <a
+                  className="mw-action"
+                  href={miniweather.demo}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Live App <ArrowUpRight size={17} />
+                </a>
+                <a className="mw-action" href={p.url}>
+                  GitHub <ArrowUpRight size={17} />
+                </a>
+              </>
+            )}
+            {p.id === 'ground-dsp' && (
+              <>
+                <a className="mw-action" href={groundDsp.live}>
+                  Become a DSP <ArrowUpRight size={17} />
+                </a>
+                <a className="mw-action" href={p.url}>
+                  GitHub <ArrowUpRight size={17} />
+                </a>
+              </>
+            )}
           </div>
         </div>
         <Dialog open={opened} onOpenChange={setOpened}>
@@ -588,7 +327,12 @@ function Explorer({
                 ))}
               </div>
               {p.id === 'capacity' && (
-                <a className="primary-button case-play" href={capacityProject.screenshot} target="_blank" rel="noreferrer">
+                <a
+                  className="primary-button case-play"
+                  href={capacityProject.screenshot}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   View actual dashboard screenshot <ArrowUpRight size={16} />
                 </a>
               )}
@@ -597,18 +341,72 @@ function Explorer({
                   View GitHub repository <ArrowUpRight size={18} />
                 </a>
               )}
-              {p.id === 'ground-dsp' && <div className="ground-dsp-invite"><div><h3>Interested in becoming our DSP?</h3><p>Explore available service areas and submit your application on our partner recruitment website.</p></div><a className="primary-button" href={groundDsp.live}>Become a DSP <ArrowUpRight size={18} /></a></div>}
-              {p.id === 'miniweather' && (
-                <section className="mw-real-example" aria-labelledby="mw-example-heading">
-                  <div className="mw-example-copy">
-                    <span className="eyebrow">A REAL GENERATION · SEPTEMBER 16, 2026</span>
-                    <h3 id="mw-example-heading">Atlanta, dressed for a warm day.</h3>
-                    <p>29°C, feels like 34°C · 65% humidity · 0% rain chance · UV 5.7. Preferences: Minimal / Everyday / Balanced comfort.</p>
-                    <p>The generated look pairs a lightweight white cotton T-shirt with beige linen trousers, white canvas sneakers, sunglasses and a leather crossbody bag. Qwen recommended breathable fabrics for the heat and humidity; FLUX visualized the outfit from its image prompt.</p>
-                    <p className="mw-example-note">Captured from the running app using real weather and AI APIs. This saved example is not a current forecast; each new request can produce a different look.</p>
-                    <a className="primary-button" href={miniweather.demo} target="_blank" rel="noreferrer">Try your city & style <ArrowUpRight size={18} /></a>
+              {p.id === 'ground-dsp' && (
+                <div className="ground-dsp-invite">
+                  <div>
+                    <h3>Interested in becoming our DSP?</h3>
+                    <p>
+                      Explore available service areas and submit your
+                      application on our partner recruitment website.
+                    </p>
                   </div>
-                  <a href={miniweather.outfitScreenshot} target="_blank" rel="noreferrer" aria-label="View the actual AI outfit screenshot full size"><img src={miniweather.outfitScreenshot} width="407" height="695" alt="Saved AI outfit result from MiniWeather, generated for Atlanta" loading="lazy" /></a>
+                  <a className="primary-button" href={groundDsp.live}>
+                    Become a DSP <ArrowUpRight size={18} />
+                  </a>
+                </div>
+              )}
+              {p.id === 'miniweather' && (
+                <section
+                  className="mw-real-example"
+                  aria-labelledby="mw-example-heading"
+                >
+                  <div className="mw-example-copy">
+                    <span className="eyebrow">
+                      A REAL GENERATION · SEPTEMBER 16, 2026
+                    </span>
+                    <h3 id="mw-example-heading">
+                      Atlanta, dressed for a warm day.
+                    </h3>
+                    <p>
+                      29°C, feels like 34°C · 65% humidity · 0% rain chance · UV
+                      5.7. Preferences: Minimal / Everyday / Balanced comfort.
+                    </p>
+                    <p>
+                      The generated look pairs a lightweight white cotton
+                      T-shirt with beige linen trousers, white canvas sneakers,
+                      sunglasses and a leather crossbody bag. Qwen recommended
+                      breathable fabrics for the heat and humidity; FLUX
+                      visualized the outfit from its image prompt.
+                    </p>
+                    <p className="mw-example-note">
+                      Captured from the running app using real weather and AI
+                      APIs. This saved example is not a current forecast; each
+                      new request can produce a different look.
+                    </p>
+                    <a
+                      className="primary-button"
+                      href={miniweather.demo}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Try your city & style <ArrowUpRight size={18} />
+                    </a>
+                  </div>
+                  <a
+                    href={miniweather.outfitScreenshot}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label="View the actual AI outfit screenshot full size"
+                  >
+                    <Image
+                      unoptimized
+                      src={miniweather.outfitScreenshot}
+                      width={407}
+                      height={695}
+                      alt="Saved AI outfit result from MiniWeather, generated for Atlanta"
+                      loading="lazy"
+                    />
+                  </a>
                 </section>
               )}
             </div>
@@ -788,13 +586,12 @@ function Journey({ onProject }: { onProject: (n: number) => void }) {
   );
 }
 export default function Home() {
-  const [mode, setMode] = useState(0);
   const [project, setProject] = useState(0);
   const [section, setSection] = useState('home');
   useEffect(() => {
     const selected = new URLSearchParams(window.location.search).get('project');
     const found = profile.projects.findIndex((item) => item.id === selected);
-    if (found >= 0) setProject(found);
+    if (found >= 0) queueMicrotask(() => setProject(found));
   }, []);
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -823,7 +620,7 @@ export default function Home() {
           {[
             ['play', 'Play'],
             ['work', 'Work'],
-            ['playground', 'Playground'],
+            ['playground', 'Lab'],
             ['experience', 'Experience'],
             ['contact', 'Contact'],
           ].map(([id, label]) => (
@@ -842,14 +639,7 @@ export default function Home() {
         </span>
       </header>
       <main id="main">
-        <Hero
-          mode={mode}
-          onMode={(n) => {
-            setMode(n);
-            setProject(modes[n].project);
-          }}
-          onProject={setProject}
-        />
+        <PixelWorld onProject={setProject} />
         <Suspense
           fallback={
             <section id="play" className="delivery-rush-loading">
@@ -900,8 +690,8 @@ export default function Home() {
             </div>
           </div>
           <footer>
-            <span>JUNIE ZHU / SYSTEMS IN MOTION</span>
-            <a href="#home">Back to the system ↑</a>
+            <span>YINGCHI ZHU / MADE WITH CURIOSITY</span>
+            <a href="#home">Back to the village ↑</a>
           </footer>
         </section>
       </main>

@@ -1,18 +1,17 @@
 :root {
   color-scheme: light;
-  --paper: #f7f3e9;
-  --paper-raised: #fffaf0;
-  --linen: #ece5d6;
-  --ink: #443e35;
-  --ink-soft: #736957;
-  --sage: #667457;
+  --paper: #f6efd9;
+  --paper-raised: #fff9e9;
+  --linen: #e9dfc1;
+  --ink: #493f31;
+  --ink-soft: #70634f;
+  --sage: #65714c;
   --sage-soft: #e0e5d5;
   --clay: #a76b50;
   --gold: #ac8a47;
-  --rule: #d4cab6;
+  --rule: #cbbb96;
   --font-body: 'Avenir Next', 'Segoe UI', Arial, sans-serif;
-  --font-editorial:
-    'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, serif;
+  --font-editorial: 'Pixelify Sans', 'Courier New', monospace;
   --font-label: 'SFMono-Regular', Consolas, monospace;
   --space-1: 4px;
   --space-2: 8px;
@@ -22,10 +21,10 @@
   --space-8: 32px;
   --space-12: 48px;
   --space-16: 64px;
-  --radius-small: 3px;
-  --radius-panel: 6px;
+  --radius-small: 0px;
+  --radius-panel: 0px;
   --border-paper: 1px solid var(--rule);
-  --shadow-paper: 0 3px 0 #ded4c0, 0 16px 35px #66543a0b;
+  --shadow-paper: 4px 4px 0 #cbbb96;
   --shadow-pressed: 0 1px 0 #4b563f;
   --motion-fast: 160ms;
   --motion-gentle: 320ms;
